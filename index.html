@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pelacak Aktivitas Harian (Realtime Database)</title>
+  <title>Pelacak Aktivitas Harian (Private Cloud)</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,8 +14,9 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- Firebase SDK (Compat Version for Vanilla JS) -->
+  <!-- Firebase SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <style>
@@ -32,9 +33,45 @@
     }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen p-4 md:p-8 flex flex-col justify-center items-center">
 
-  <div class="max-w-7xl mx-auto space-y-6">
+  <!-- ==================== 1. FORM AUTH (LOGIN / REGISTER) ==================== -->
+  <div id="authContainer" class="w-full max-w-md glass-card rounded-2xl p-8 space-y-6">
+    <div class="text-center">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+        Pelacak Aktivitas
+      </h1>
+      <p class="text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
+    </div>
+
+    <!-- TAB SWITCHER -->
+    <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+      <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition">Masuk</button>
+      <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Daftar</button>
+    </div>
+
+    <form id="authForm" class="space-y-4">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Email</label>
+        <input type="email" id="authEmail" placeholder="nama@email.com" required
+          class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Kata Sandi</label>
+        <input type="password" id="authPassword" placeholder="••••••••" required minlength="6"
+          class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+      </div>
+
+      <button type="submit" id="btnAuthSubmit"
+        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-blue-500/20">
+        Masuk
+      </button>
+    </form>
+  </div>
+
+  <!-- ==================== 2. MAIN APP DASHBOARD (HIDDEN BY DEFAULT) ==================== -->
+  <div id="appContainer" class="w-full max-w-7xl space-y-6 hidden">
     
     <!-- HEADER -->
     <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -42,13 +79,19 @@
         <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
           Pelacak Aktivitas Harian
         </h1>
-        <p class="text-slate-400 text-sm mt-1">Terhubung dengan Firebase Realtime Database Cloud</p>
+        <p class="text-slate-400 text-sm mt-1">Data tersimpan secara privat & tersinkronisasi Cloud</p>
       </div>
-      <div class="flex items-center gap-3">
-        <span id="dbStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          Menghubungkan ke Cloud...
-        </span>
+
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <p id="userEmailDisplay" class="text-xs font-semibold text-white">user@email.com</p>
+          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Private Storage Active
+          </span>
+        </div>
+        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-2">
+          <i class="fa-solid fa-right-from-bracket"></i> Keluar
+        </button>
       </div>
     </header>
 
@@ -130,7 +173,7 @@
 
           <button type="submit" id="btnSubmit"
             class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Cloud
+            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
           </button>
         </form>
       </div>
@@ -157,7 +200,7 @@
     <div class="glass-card rounded-2xl p-6 space-y-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-emerald-400"></i> Riwayat Aktivitas
+          <i class="fa-solid fa-list-check text-emerald-400"></i> Riwayat Aktivitas Pribadi
         </h2>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -177,7 +220,6 @@
         </div>
       </div>
 
-      <!-- TABLE -->
       <div class="overflow-x-auto rounded-xl border border-slate-800">
         <table class="w-full text-left text-sm text-slate-300">
           <thead class="bg-slate-800/60 text-xs uppercase text-slate-400">
@@ -192,7 +234,7 @@
           </thead>
           <tbody id="activityTableBody" class="divide-y divide-slate-800">
             <tr>
-              <td colspan="6" class="text-center p-6 text-slate-500">Memuat data dari Firebase Realtime Database...</td>
+              <td colspan="6" class="text-center p-6 text-slate-500">Memuat data pribadi Anda...</td>
             </tr>
           </tbody>
         </table>
@@ -208,96 +250,143 @@
   </div>
 
   <!-- JAVASCRIPT & FIREBASE INTEGRATION -->
-  <script type="module">
+  <script>
     // =============================================================
-    // 1. KONFIGURASI FIREBASE REALTIME DATABASE
-    // Ganti dengan konfigurasi dari Firebase Console Anda!
+    // 1. FIREBASE CONFIG
     // =============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSy...", // Ganti dengan API Key asli kamu
+      authDomain: "crudfb3.firebaseapp.com",
+      databaseURL: "https://crudfb3.firebaseio.com",
+      projectId: "crudfb3",
+      storageBucket: "crudfb3.appspot.com",
+      messagingSenderId: "970524897736",
+      appId: "1:970524897736:web:33a524ae05c33ee95d90fd"
+    };
 
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c",
-    authDomain: "crudfb3.firebaseapp.com",
-    databaseURL: "https://crudfb3.firebaseio.com",
-    projectId: "crudfb3",
-    storageBucket: "crudfb3.firebasestorage.app",
-    messagingSenderId: "970524897736",
-    appId: "1:970524897736:web:33a524ae05c33ee95d90fd"
-  };
-
-  // Initialize Firebase
- // const app = initializeApp(firebaseConfig);
- //script> 
-
-    // Inisialisasi Firebase
-    let db;
-    let activitiesRef;
+    let currentUser = null;
+    let userActivitiesRef = null;
     let allActivities = [];
+    let isLoginMode = true;
 
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      activitiesRef = db.ref('activities');
+    let categoryChartInstance = null;
+    let weeklyChartInstance = null;
 
-      // Indikator koneksi berhasil
-      document.getElementById('dbStatus').className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-      document.getElementById('dbStatus').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Cloud Database Connected`;
-    } catch (e) {
-      console.error("Firebase Initialization Error:", e);
-      document.getElementById('dbStatus').className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
-      document.getElementById('dbStatus').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> Isikan Config Firebase`;
-    }
-
-    // Set default datetime picker ke waktu lokal sekarang
+    // Set datetime default
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
 
-    // Chart instances
-    let categoryChartInstance = null;
-    let weeklyChartInstance = null;
+    // =============================================================
+    // 2. AUTHENTICATION STATE OBSERVER
+    // =============================================================
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('authContainer').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+        document.body.classList.remove('flex', 'flex-col', 'justify-center', 'items-center');
+        document.getElementById('userEmailDisplay').innerText = user.email;
+
+        // Path penyimpanan privat spesifik per User ID (users/UID/activities)
+        userActivitiesRef = db.ref(`users/${user.uid}/activities`);
+        listenToUserActivities();
+        showToast(`Selamat datang, ${user.email}!`, 'success');
+      } else {
+        currentUser = null;
+        userActivitiesRef = null;
+        document.getElementById('authContainer').classList.remove('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
+        document.body.classList.add('flex', 'flex-col', 'justify-center', 'items-center');
+      }
+    });
+
+    // Switch Tab Mode (Login / Register)
+    function switchAuthTab(mode) {
+      isLoginMode = mode === 'login';
+      const btnLogin = document.getElementById('btnTabLogin');
+      const btnRegister = document.getElementById('btnTabRegister');
+      const btnSubmit = document.getElementById('btnAuthSubmit');
+      const subtitle = document.getElementById('authSubtitle');
+
+      if (isLoginMode) {
+        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition";
+        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        btnSubmit.innerText = "Masuk";
+        subtitle.innerText = "Masuk untuk mengelola data aktivitas pribadi kamu";
+      } else {
+        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition";
+        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        btnSubmit.innerText = "Daftar Akun Baru";
+        subtitle.innerText = "Buat akun privat baru untuk menyimpan aktivitas kamu";
+      }
+    }
+
+    // Handle Login / Register Form Submit
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const btnSubmit = document.getElementById('btnAuthSubmit');
+
+      try {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Memproses...";
+
+        if (isLoginMode) {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          await auth.createUserWithEmailAndPassword(email, password);
+        }
+      } catch (err) {
+        console.error("Auth Error:", err);
+        showToast(err.message || "Gagal melakukan otentikasi", "error");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = isLoginMode ? "Masuk" : "Daftar Akun Baru";
+      }
+    });
+
+    function logout() {
+      auth.signOut().then(() => {
+        showToast("Berhasil keluar.", "success");
+      });
+    }
 
     // =============================================================
-    // 2. READ REALTIME DATA FROM FIREBASE
+    // 3. LISTEN TO USER'S PRIVATE DATA
     // =============================================================
-    if (activitiesRef) {
-      activitiesRef.on('value', (snapshot) => {
+    function listenToUserActivities() {
+      if (!userActivitiesRef) return;
+
+      userActivitiesRef.on('value', (snapshot) => {
         const data = snapshot.val();
         allActivities = [];
         
         if (data) {
           Object.keys(data).forEach((key) => {
-            allActivities.push({
-              id: key,
-              ...data[key]
-            });
+            allActivities.push({ id: key, ...data[key] });
           });
-          // Urutkan dari yang terbaru
           allActivities.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
         }
 
         renderUI();
       }, (error) => {
-        console.error("Gagal membaca data Realtime Database:", error);
-        showToast("Gagal terhubung ke Realtime Database", "error");
+        console.error("Firebase Read Error:", error);
+        showToast("Akses ditolak atau error membaca data.", "error");
       });
     }
 
     // =============================================================
-    // 3. CREATE DATA TO FIREBASE
+    // 4. ADD & DELETE PRIVATE ACTIVITIES
     // =============================================================
     document.getElementById('activityForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      if (!activitiesRef) {
-        showToast("Firebase Config belum diisi!", "error");
-        return;
-      }
+      if (!userActivitiesRef) return;
 
       const title = document.getElementById('inputTitle').value.trim();
       const category = document.getElementById('inputCategory').value;
@@ -319,43 +408,39 @@
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
 
-        await activitiesRef.push(newActivity);
+        await userActivitiesRef.push(newActivity);
 
-        showToast("Aktivitas berhasil disimpan ke Cloud!", "success");
+        showToast("Aktivitas berhasil disimpan!", "success");
         document.getElementById('activityForm').reset();
         
-        // Reset waktu ke sekarang
         const resetNow = new Date();
         resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
         document.getElementById('inputDateTime').value = resetNow.toISOString().slice(0, 16);
 
       } catch (err) {
         console.error("Error saving data:", err);
-        showToast("Gagal menyimpan data ke Firebase", "error");
+        showToast("Gagal menyimpan data", "error");
       } finally {
         const btn = document.getElementById('btnSubmit');
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Cloud`;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas`;
       }
     });
 
-    // =============================================================
-    // 4. DELETE DATA FROM FIREBASE
-    // =============================================================
     async function deleteActivity(id) {
-      if (!confirm("Apakah kamu yakin ingin menghapus aktivitas ini dari Cloud?")) return;
+      if (!confirm("Hapus aktivitas ini dari akun kamu?")) return;
 
       try {
-        await db.ref('activities/' + id).remove();
-        showToast("Aktivitas berhasil dihapus!", "success");
+        await userActivitiesRef.child(id).remove();
+        showToast("Aktivitas dihapus!", "success");
       } catch (err) {
         console.error("Error deleting activity:", err);
-        showToast("Gagal menghapus dari Cloud", "error");
+        showToast("Gagal menghapus data", "error");
       }
     }
 
     // =============================================================
-    // 5. RENDER UI, STATISTICS, AND CHARTS
+    // 5. RENDER UI & CHARTS
     // =============================================================
     function renderUI() {
       const searchVal = document.getElementById('searchFilter').value.toLowerCase();
@@ -372,7 +457,6 @@
       renderCharts(allActivities);
     }
 
-    // Event listener filter
     document.getElementById('searchFilter').addEventListener('input', renderUI);
     document.getElementById('categoryFilter').addEventListener('change', renderUI);
 
@@ -381,10 +465,7 @@
       tbody.innerHTML = '';
 
       if (data.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center p-6 text-slate-500">Belum ada data aktivitas tercatat.</td>
-          </tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-500">Belum ada aktivitas tercatat di akun ini.</td></tr>`;
         return;
       }
 
@@ -426,16 +507,12 @@
 
     function renderMetrics(data) {
       const todayStr = new Date().toISOString().split('T')[0];
-      
-      let todayDuration = 0;
-      let todayCount = 0;
-      let totalDuration = 0;
+      let todayDuration = 0, todayCount = 0, totalDuration = 0;
       const catCount = {};
 
       data.forEach(item => {
         totalDuration += Number(item.duration);
         catCount[item.category] = (catCount[item.category] || 0) + 1;
-
         if (item.dateTime && item.dateTime.startsWith(todayStr)) {
           todayDuration += Number(item.duration);
           todayCount++;
@@ -444,11 +521,9 @@
 
       document.getElementById('statTodayDuration').innerText = `${todayDuration} Menit`;
       document.getElementById('statTodaySub').innerText = `${todayCount} aktivitas dicatat hari ini`;
-
       document.getElementById('statTotalDuration').innerText = `${(totalDuration / 60).toFixed(1)} Jam`;
       document.getElementById('statTotalCount').innerText = `${data.length} total entri tersimpan`;
 
-      // Find top category
       let topCat = '-';
       let maxC = 0;
       Object.keys(catCount).forEach(cat => {
@@ -478,10 +553,8 @@
         }
       });
 
-      // 1. Category Pie Chart
       const ctxCat = document.getElementById('categoryChart').getContext('2d');
       if (categoryChartInstance) categoryChartInstance.destroy();
-
       categoryChartInstance = new Chart(ctxCat, {
         type: 'doughnut',
         data: {
@@ -497,15 +570,13 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } },
-            title: { display: true, text: 'Distribusi Durasi per Kategori (Menit)', color: '#f8fafc', font: { size: 12 } }
+            title: { display: true, text: 'Distribusi Durasi (Menit)', color: '#f8fafc', font: { size: 12 } }
           }
         }
       });
 
-      // 2. Bar Chart (Trend 7 Hari)
       const last7Days = [];
       const dayDurations = Array(7).fill(0);
-      
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -523,7 +594,6 @@
 
       const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
       if (weeklyChartInstance) weeklyChartInstance.destroy();
-
       weeklyChartInstance = new Chart(ctxWeekly, {
         type: 'bar',
         data: {
@@ -540,7 +610,7 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            title: { display: true, text: 'Aktivitas 7 Hari Terakhir (Menit)', color: '#f8fafc', font: { size: 12 } }
+            title: { display: true, text: 'Aktivitas 7 Hari Terakhir', color: '#f8fafc', font: { size: 12 } }
           },
           scales: {
             x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
@@ -550,23 +620,16 @@
       });
     }
 
-    // UTILS
     function showToast(msg, type = 'success') {
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toastMessage');
       const toastIcon = document.getElementById('toastIcon');
 
       toastMsg.innerText = msg;
-      if (type === 'success') {
-        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
-      } else {
-        toastIcon.className = 'fa-solid fa-circle-xmark text-red-400 text-lg';
-      }
+      toastIcon.className = type === 'success' ? 'fa-solid fa-circle-check text-emerald-400 text-lg' : 'fa-solid fa-circle-xmark text-red-400 text-lg';
 
       toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
+      setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
     }
 
     function escapeHtml(str) {
