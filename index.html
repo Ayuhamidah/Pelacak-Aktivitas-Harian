@@ -1,765 +1,568 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full bg-slate-50">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelacak Aktivitas & Kebiasaan Harian</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pelacak Aktivitas Harian (Realtime Database)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDK (Compat Version for Vanilla JS) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
 </head>
-<body class="h-full text-slate-800 font-sans antialiased flex flex-col min-h-screen">
+<body class="min-h-screen p-4 md:p-8">
 
-    <!-- Top Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                    <i class="fa-solid fa-person-running text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold text-slate-900 leading-tight">ActiTrack</h1>
-                    <p class="text-xs text-slate-500 hidden sm:block">Pelacak Aktivitas & Kebiasaan Harian</p>
-                </div>
-            </div>
-
-            <!-- Action Buttons Header -->
-            <div class="flex items-center space-x-2">
-                <button onclick="exportData()" class="px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center space-x-1.5">
-                    <i class="fa-solid fa-download text-slate-500"></i>
-                    <span class="hidden sm:inline">Ekspor JSON</span>
-                </button>
-                <label class="px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center space-x-1.5 cursor-pointer">
-                    <i class="fa-solid fa-upload text-slate-500"></i>
-                    <span class="hidden sm:inline">Impor JSON</span>
-                    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
-                </label>
-                <button onclick="confirmResetData()" class="px-3 py-1.5 text-xs sm:text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors flex items-center space-x-1.5">
-                    <i class="fa-solid fa-rotate-left"></i>
-                    <span class="hidden sm:inline">Reset</span>
-                </button>
-            </div>
-        </div>
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- HEADER -->
+    <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          Pelacak Aktivitas Harian
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">Terhubung dengan Firebase Realtime Database Cloud</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="dbStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          Menghubungkan ke Cloud...
+        </span>
+      </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- METRICS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-blue-500">
+        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
+        <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-white">0 Menit</h3>
+        <p id="statTodaySub" class="text-xs text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
+      </div>
 
-        <!-- Stat Cards Row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <!-- Stat Card 1 -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-clock text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Durasi Hari Ini</p>
-                    <h3 id="statTodayDuration" class="text-xl font-bold text-slate-900 mt-0.5">0 mnt</h3>
-                </div>
-            </div>
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500">
+        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
+        <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-white">0 Jam</h3>
+        <p id="statTotalCount" class="text-xs text-slate-500 mt-1">0 total entri tersimpan</p>
+      </div>
 
-            <!-- Stat Card 2 -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-calendar-check text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Aktivitas Hari Ini</p>
-                    <h3 id="statTodayCount" class="text-xl font-bold text-slate-900 mt-0.5">0 entri</h3>
-                </div>
-            </div>
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-purple-500">
+        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
+        <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-white">-</h3>
+        <p id="statTopCategorySub" class="text-xs text-slate-500 mt-1">Berdasarkan frekuensi</p>
+      </div>
 
-            <!-- Stat Card 3 -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-chart-line text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total Minggu Ini</p>
-                    <h3 id="statWeeklyDuration" class="text-xl font-bold text-slate-900 mt-0.5">0 jam</h3>
-                </div>
-            </div>
-
-            <!-- Stat Card 4 -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-fire text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Kategori Terbanyak</p>
-                    <h3 id="statTopCategory" class="text-base font-bold text-slate-900 mt-0.5 truncate max-w-[120px]">-</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Workspace Grid (Form + Charts) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Left Sidebar: Add Activity Form (5 cols on lg) -->
-            <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div class="flex items-center space-x-2 pb-4 mb-4 border-b border-slate-100">
-                    <i class="fa-solid fa-plus-circle text-brand-600 text-lg"></i>
-                    <h2 class="font-bold text-slate-800">Tambah Aktivitas</h2>
-                </div>
-
-                <form id="activityForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <!-- Date Input -->
-                    <div>
-                        <label for="actDate" class="block text-xs font-semibold text-slate-600 mb-1">Tanggal *</label>
-                        <input type="date" id="actDate" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
-                    </div>
-
-                    <!-- Name Input -->
-                    <div>
-                        <label for="actName" class="block text-xs font-semibold text-slate-600 mb-1">Nama Aktivitas *</label>
-                        <input type="text" id="actName" required placeholder="misal: Jogging Pagi, Modul React" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
-                    </div>
-
-                    <!-- Category Selection -->
-                    <div>
-                        <label for="actCategory" class="block text-xs font-semibold text-slate-600 mb-1">Kategori *</label>
-                        <select id="actCategory" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all bg-white">
-                            <option value="Olahraga/Lari">🏃‍♂️ Olahraga / Lari</option>
-                            <option value="Bersepeda">🚴‍♂️ Bersepeda</option>
-                            <option value="Belajar/Kerja">📚 Belajar / Kerja</option>
-                            <option value="Kesehatan/Nutrisi">🥗 Kesehatan / Nutrisi</option>
-                            <option value="Hiburan">🎮 Hiburan / Santai</option>
-                            <option value="Lainnya">✨ Lainnya</option>
-                        </select>
-                    </div>
-
-                    <!-- Duration & Distance Grid -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label for="actDuration" class="block text-xs font-semibold text-slate-600 mb-1">Durasi (Menit) *</label>
-                            <input type="number" id="actDuration" min="1" required placeholder="30" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
-                        </div>
-                        <div>
-                            <label for="actDistance" class="block text-xs font-semibold text-slate-600 mb-1">Jarak / Nilai (Opsional)</label>
-                            <input type="text" id="actDistance" placeholder="misal: 5 km" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
-                        </div>
-                    </div>
-
-                    <!-- Notes Input -->
-                    <div>
-                        <label for="actNotes" class="block text-xs font-semibold text-slate-600 mb-1">Catatan Tambahan</label>
-                        <textarea id="actNotes" rows="2" placeholder="Catatan singkat perasaan atau detail..." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"></textarea>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-500/30 transition-all flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Simpan Aktivitas</span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Right Area: Visual Charts (7 cols on lg) -->
-            <div class="lg:col-span-8 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Chart 1: Category Distribution -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-                            <h3 class="font-bold text-slate-800 text-sm">Distribusi Kategori</h3>
-                            <span class="text-xs text-slate-400">Total Durasi</span>
-                        </div>
-                        <div class="relative h-56 w-full flex items-center justify-center">
-                            <canvas id="categoryPieChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Chart 2: 7-Day Trend Bar Chart -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-                            <h3 class="font-bold text-slate-800 text-sm">Tren 7 Hari Terakhir</h3>
-                            <span class="text-xs text-slate-400">Menit / Hari</span>
-                        </div>
-                        <div class="relative h-56 w-full">
-                            <canvas id="weeklyBarChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Banner / Tip -->
-                <div class="bg-gradient-to-r from-brand-500 to-indigo-600 rounded-2xl p-4 text-white shadow-sm flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-lightbulb text-amber-300 text-lg"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-brand-100 font-medium">Tips Konsistensi</p>
-                            <p class="text-sm font-semibold">Lakukan aktivitas minimal 20 menit setiap hari untuk membangun kebiasaan positif!</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- History & Logs Section -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <!-- Section Header & Controls -->
-            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-list-check text-brand-600 text-lg"></i>
-                    <h2 class="font-bold text-slate-800">Riwayat Aktivitas</h2>
-                    <span id="activityCountBadge" class="bg-brand-50 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-semibold">0</span>
-                </div>
-
-                <!-- Search and Filter Bar -->
-                <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                    <!-- Search Input -->
-                    <div class="relative w-full sm:w-64">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" oninput="renderActivities()" placeholder="Cari aktivitas..." class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
-                    </div>
-
-                    <!-- Category Filter -->
-                    <div class="w-full sm:w-auto">
-                        <select id="filterCategory" onchange="renderActivities()" class="w-full sm:w-auto px-3 py-1.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all bg-white">
-                            <option value="ALL">Semua Kategori</option>
-                            <option value="Olahraga/Lari">🏃‍♂️ Olahraga / Lari</option>
-                            <option value="Bersepeda">🚴‍♂️ Bersepeda</option>
-                            <option value="Belajar/Kerja">📚 Belajar / Kerja</option>
-                            <option value="Kesehatan/Nutrisi">🥗 Kesehatan / Nutrisi</option>
-                            <option value="Hiburan">🎮 Hiburan</option>
-                            <option value="Lainnya">✨ Lainnya</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Activity List Table / Grid Container -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                            <th class="py-3 px-4">Tanggal</th>
-                            <th class="py-3 px-4">Aktivitas</th>
-                            <th class="py-3 px-4">Kategori</th>
-                            <th class="py-3 px-4">Durasi</th>
-                            <th class="py-3 px-4">Jarak/Nilai</th>
-                            <th class="py-3 px-4">Catatan</th>
-                            <th class="py-3 px-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activityTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
-                        <!-- Dynamic items will be injected here -->
-                    </tbody>
-                </table>
-
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden py-12 text-center">
-                    <div class="w-16 h-16 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
-                        <i class="fa-solid fa-folder-open text-2xl"></i>
-                    </div>
-                    <p class="text-sm font-semibold text-slate-700">Belum ada data aktivitas</p>
-                    <p class="text-xs text-slate-400 mt-1">Silakan tambahkan aktivitas baru menggunakan formulir di atas.</p>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-    <!-- Confirm Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4">
-            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center mx-auto">
-                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-            </div>
-            <div class="text-center">
-                <h3 class="font-bold text-slate-900 text-base" id="modalTitle">Konfirmasi Reset</h3>
-                <p class="text-xs text-slate-500 mt-1" id="modalMessage">Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan.</p>
-            </div>
-            <div class="flex space-x-3 pt-2">
-                <button onclick="closeModal()" class="flex-1 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Batal</button>
-                <button id="modalConfirmBtn" class="flex-1 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors">Ya, Hapus</button>
-            </div>
-        </div>
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-emerald-500">
+        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
+        <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-white truncate">-</h3>
+        <p id="statLastTime" class="text-xs text-slate-500 mt-1">Belum ada data</p>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
-        <p>© 2026 ActiTrack - Web App Pelacak Aktivitas Harian. Dibuat untuk dipublikasikan di Vercel.</p>
-    </footer>
+    <!-- MAIN CONTENT GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- FORM INPUT -->
+      <div class="glass-card rounded-2xl p-6 lg:col-span-1 space-y-4">
+        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-blue-400"></i> Tambah Aktivitas
+        </h2>
 
-    <script>
-        // Category Styling Configuration
-        const CATEGORY_CONFIG = {
-            'Olahraga/Lari': { color: '#6366f1', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', icon: 'fa-person-running' },
-            'Bersepeda': { color: '#06b6d4', bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200', icon: 'fa-person-biking' },
-            'Belajar/Kerja': { color: '#8b5cf6', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', icon: 'fa-book' },
-            'Kesehatan/Nutrisi': { color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: 'fa-apple-whole' },
-            'Hiburan': { color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: 'fa-gamepad' },
-            'Lainnya': { color: '#64748b', bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200', icon: 'fa-star' }
+        <form id="activityForm" class="space-y-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Tanggal & Waktu</label>
+            <input type="datetime-local" id="inputDateTime" required
+              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Nama Aktivitas</label>
+            <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
+              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Kategori</label>
+              <select id="inputCategory" required
+                class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                <option value="Olahraga">🏃 Olahraga</option>
+                <option value="Belajar">📚 Belajar</option>
+                <option value="Pekerjaan">💼 Pekerjaan</option>
+                <option value="Hiburan">🎮 Hiburan</option>
+                <option value="Istirahat">😴 Istirahat</option>
+                <option value="Lainnya">✨ Lainnya</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Durasi (Menit)</label>
+              <input type="number" id="inputDuration" min="1" placeholder="30" required
+                class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Catatan Opsional</label>
+            <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
+              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmit"
+            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Cloud
+          </button>
+        </form>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="glass-card rounded-2xl p-6 lg:col-span-2 space-y-4">
+        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-purple-400"></i> Analisis & Grafik
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="categoryChart"></canvas>
+          </div>
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABLE & FILTER SECTION -->
+    <div class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-emerald-400"></i> Riwayat Aktivitas
+        </h2>
+
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <input type="text" id="searchFilter" placeholder="Cari aktivitas..."
+            class="bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
+
+          <select id="categoryFilter"
+            class="bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+            <option value="ALL">Semua Kategori</option>
+            <option value="Olahraga">Olahraga</option>
+            <option value="Belajar">Belajar</option>
+            <option value="Pekerjaan">Pekerjaan</option>
+            <option value="Hiburan">Hiburan</option>
+            <option value="Istirahat">Istirahat</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-800/60 text-xs uppercase text-slate-400">
+            <tr>
+              <th class="p-3">Waktu</th>
+              <th class="p-3">Aktivitas</th>
+              <th class="p-3">Kategori</th>
+              <th class="p-3">Durasi</th>
+              <th class="p-3">Catatan</th>
+              <th class="p-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="activityTableBody" class="divide-y divide-slate-800">
+            <tr>
+              <td colspan="6" class="text-center p-6 text-slate-500">Memuat data dari Firebase Realtime Database...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <span id="toastMessage" class="text-xs font-medium">Pesan notifikasi</span>
+  </div>
+
+  <!-- JAVASCRIPT & FIREBASE INTEGRATION -->
+  <script>
+    // =============================================================
+    // 1. KONFIGURASI FIREBASE REALTIME DATABASE
+    // Ganti dengan konfigurasi dari Firebase Console Anda!
+    // =============================================================
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_API_KEY_HERE",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
+      databaseURL: "PASTE_YOUR_DATABASE_URL_HERE", // Sangat penting untuk Realtime Database!
+      projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+      appId: "PASTE_YOUR_APP_ID_HERE"
+    };
+
+    // Inisialisasi Firebase
+    let db;
+    let activitiesRef;
+    let allActivities = [];
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      activitiesRef = db.ref('activities');
+
+      // Indikator koneksi berhasil
+      document.getElementById('dbStatus').className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+      document.getElementById('dbStatus').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Cloud Database Connected`;
+    } catch (e) {
+      console.error("Firebase Initialization Error:", e);
+      document.getElementById('dbStatus').className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+      document.getElementById('dbStatus').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> Isikan Config Firebase`;
+    }
+
+    // Set default datetime picker ke waktu lokal sekarang
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
+
+    // Chart instances
+    let categoryChartInstance = null;
+    let weeklyChartInstance = null;
+
+    // =============================================================
+    // 2. READ REALTIME DATA FROM FIREBASE
+    // =============================================================
+    if (activitiesRef) {
+      activitiesRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        allActivities = [];
+        
+        if (data) {
+          Object.keys(data).forEach((key) => {
+            allActivities.push({
+              id: key,
+              ...data[key]
+            });
+          });
+          // Urutkan dari yang terbaru
+          allActivities.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        }
+
+        renderUI();
+      }, (error) => {
+        console.error("Gagal membaca data Realtime Database:", error);
+        showToast("Gagal terhubung ke Realtime Database", "error");
+      });
+    }
+
+    // =============================================================
+    // 3. CREATE DATA TO FIREBASE
+    // =============================================================
+    document.getElementById('activityForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!activitiesRef) {
+        showToast("Firebase Config belum diisi!", "error");
+        return;
+      }
+
+      const title = document.getElementById('inputTitle').value.trim();
+      const category = document.getElementById('inputCategory').value;
+      const duration = parseInt(document.getElementById('inputDuration').value);
+      const dateTime = document.getElementById('inputDateTime').value;
+      const notes = document.getElementById('inputNotes').value.trim();
+
+      const newActivity = {
+        title,
+        category,
+        duration,
+        dateTime,
+        notes,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+
+        await activitiesRef.push(newActivity);
+
+        showToast("Aktivitas berhasil disimpan ke Cloud!", "success");
+        document.getElementById('activityForm').reset();
+        
+        // Reset waktu ke sekarang
+        const resetNow = new Date();
+        resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
+        document.getElementById('inputDateTime').value = resetNow.toISOString().slice(0, 16);
+
+      } catch (err) {
+        console.error("Error saving data:", err);
+        showToast("Gagal menyimpan data ke Firebase", "error");
+      } finally {
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan ke Cloud`;
+      }
+    });
+
+    // =============================================================
+    // 4. DELETE DATA FROM FIREBASE
+    // =============================================================
+    async function deleteActivity(id) {
+      if (!confirm("Apakah kamu yakin ingin menghapus aktivitas ini dari Cloud?")) return;
+
+      try {
+        await db.ref('activities/' + id).remove();
+        showToast("Aktivitas berhasil dihapus!", "success");
+      } catch (err) {
+        console.error("Error deleting activity:", err);
+        showToast("Gagal menghapus dari Cloud", "error");
+      }
+    }
+
+    // =============================================================
+    // 5. RENDER UI, STATISTICS, AND CHARTS
+    // =============================================================
+    function renderUI() {
+      const searchVal = document.getElementById('searchFilter').value.toLowerCase();
+      const catVal = document.getElementById('categoryFilter').value;
+
+      const filtered = allActivities.filter(item => {
+        const matchSearch = item.title.toLowerCase().includes(searchVal) || (item.notes && item.notes.toLowerCase().includes(searchVal));
+        const matchCat = catVal === 'ALL' || item.category === catVal;
+        return matchSearch && matchCat;
+      });
+
+      renderTable(filtered);
+      renderMetrics(allActivities);
+      renderCharts(allActivities);
+    }
+
+    // Event listener filter
+    document.getElementById('searchFilter').addEventListener('input', renderUI);
+    document.getElementById('categoryFilter').addEventListener('change', renderUI);
+
+    function renderTable(data) {
+      const tbody = document.getElementById('activityTableBody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center p-6 text-slate-500">Belum ada data aktivitas tercatat.</td>
+          </tr>`;
+        return;
+      }
+
+      data.forEach(item => {
+        const dateObj = new Date(item.dateTime);
+        const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const formattedTime = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        const badgeColors = {
+          'Olahraga': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+          'Belajar': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+          'Pekerjaan': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+          'Hiburan': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+          'Istirahat': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+          'Lainnya': 'bg-slate-500/10 text-slate-400 border-slate-500/20'
         };
 
-        // Application State
-        let activities = [];
-        let pieChartInstance = null;
-        let barChartInstance = null;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition";
+        tr.innerHTML = `
+          <td class="p-3 text-xs text-slate-400 font-mono">${formattedDate}, ${formattedTime}</td>
+          <td class="p-3 font-medium text-white">${escapeHtml(item.title)}</td>
+          <td class="p-3">
+            <span class="px-2.5 py-1 rounded-full text-xs font-medium border ${badgeColors[item.category] || badgeColors['Lainnya']}">
+              ${item.category}
+            </span>
+          </td>
+          <td class="p-3 text-xs font-semibold text-slate-200">${item.duration} Mins</td>
+          <td class="p-3 text-xs text-slate-400 max-w-xs truncate">${item.notes ? escapeHtml(item.notes) : '-'}</td>
+          <td class="p-3 text-right">
+            <button onclick="deleteActivity('${item.id}')" class="text-slate-500 hover:text-red-400 transition p-1 text-xs">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-        // On Page Load Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            // Set default date input to today
-            document.getElementById('actDate').valueToDate = new Date();
-            document.getElementById('actDate').value = new Date().toISOString().split('T')[0];
+    function renderMetrics(data) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      let todayDuration = 0;
+      let todayCount = 0;
+      let totalDuration = 0;
+      const catCount = {};
 
-            loadDataFromStorage();
-            initCharts();
-            updateApp();
-        });
+      data.forEach(item => {
+        totalDuration += Number(item.duration);
+        catCount[item.category] = (catCount[item.category] || 0) + 1;
 
-        // Load Data from LocalStorage
-        function loadDataFromStorage() {
-            const savedData = localStorage.getItem('actitrack_activities');
-            if (savedData) {
-                try {
-                    activities = JSON.parse(savedData);
-                } catch (e) {
-                    console.error("Gagal membaca LocalStorage:", e);
-                    activities = [];
-                }
-            } else {
-                // Pre-populate with mock data if empty for instant visual delight
-                const today = new Date();
-                const formatDate = (daysAgo) => {
-                    const d = new Date(today);
-                    d.setDate(d.getDate() - daysAgo);
-                    return d.toISOString().split('T')[0];
-                };
-
-                activities = [
-                    { id: '1', date: formatDate(0), name: 'Lari Pagi Keliling Komplek', category: 'Olahraga/Lari', duration: 35, distance: '4.5 km', notes: 'Cuaca cerah, kondisi segar.', createdAt: Date.now() - 10000 },
-                    { id: '2', date: formatDate(0), name: 'Belajar Streamlit & Web App', category: 'Belajar/Kerja', duration: 90, distance: '', notes: 'Memahami konsep dasar komponen.', createdAt: Date.now() - 5000 },
-                    { id: '3', date: formatDate(1), name: 'Gowes Sepeda Santai', category: 'Bersepeda', duration: 60, distance: '12 km', notes: 'Bersama teman-teman.', createdAt: Date.now() - 20000 },
-                    { id: '4', date: formatDate(2), name: 'Membaca Buku Self-Development', category: 'Belajar/Kerja', duration: 45, distance: '30 hal', notes: 'Bab 3 menarik sekali.', createdAt: Date.now() - 30000 },
-                    { id: '5', date: formatDate(3), name: 'Meditasi & Yoga Pagi', category: 'Kesehatan/Nutrisi', duration: 25, distance: '', notes: 'Fokus pada pernapasan.', createdAt: Date.now() - 40000 }
-                ];
-                saveDataToStorage();
-            }
+        if (item.dateTime && item.dateTime.startsWith(todayStr)) {
+          todayDuration += Number(item.duration);
+          todayCount++;
         }
+      });
 
-        // Save Data to LocalStorage
-        function saveDataToStorage() {
-            localStorage.setItem('actitrack_activities', JSON.stringify(activities));
+      document.getElementById('statTodayDuration').innerText = `${todayDuration} Menit`;
+      document.getElementById('statTodaySub').innerText = `${todayCount} aktivitas dicatat hari ini`;
+
+      document.getElementById('statTotalDuration').innerText = `${(totalDuration / 60).toFixed(1)} Jam`;
+      document.getElementById('statTotalCount').innerText = `${data.length} total entri tersimpan`;
+
+      // Find top category
+      let topCat = '-';
+      let maxC = 0;
+      Object.keys(catCount).forEach(cat => {
+        if (catCount[cat] > maxC) {
+          maxC = catCount[cat];
+          topCat = cat;
         }
+      });
+      document.getElementById('statTopCategory').innerText = topCat;
 
-        // Form Submit Handler
-        function handleFormSubmit(event) {
-            event.preventDefault();
+      if (data.length > 0) {
+        document.getElementById('statLastActivity').innerText = data[0].title;
+        document.getElementById('statLastTime').innerText = new Date(data[0].dateTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      } else {
+        document.getElementById('statLastActivity').innerText = '-';
+        document.getElementById('statLastTime').innerText = 'Belum ada data';
+      }
+    }
 
-            const date = document.getElementById('actDate').value;
-            const name = document.getElementById('actName').value.trim();
-            const category = document.getElementById('actCategory').value;
-            const duration = parseInt(document.getElementById('actDuration').value, 10);
-            const distance = document.getElementById('actDistance').value.trim();
-            const notes = document.getElementById('actNotes').value.trim();
-
-            if (!date || !name || !duration || duration <= 0) {
-                showToast('Mohon isi semua bidang wajib dengan benar!', 'error');
-                return;
-            }
-
-            const newActivity = {
-                id: Date.now().toString(),
-                date,
-                name,
-                category,
-                duration,
-                distance,
-                notes,
-                createdAt: Date.now()
-            };
-
-            activities.unshift(newActivity); // Add to beginning
-            saveDataToStorage();
-            updateApp();
-
-            // Reset form except date
-            document.getElementById('actName').value = '';
-            document.getElementById('actDuration').value = '';
-            document.getElementById('actDistance').value = '';
-            document.getElementById('actNotes').value = '';
-
-            showToast('Aktivitas berhasil ditambahkan!', 'success');
+    function renderCharts(data) {
+      const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
+      data.forEach(item => {
+        if (catTotals[item.category] !== undefined) {
+          catTotals[item.category] += Number(item.duration);
+        } else {
+          catTotals['Lainnya'] += Number(item.duration);
         }
+      });
 
-        // Delete Single Entry
-        function deleteActivity(id) {
-            activities = activities.filter(item => item.id !== id);
-            saveDataToStorage();
-            updateApp();
-            showToast('Entri aktivitas telah dihapus.', 'info');
+      // 1. Category Pie Chart
+      const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      if (categoryChartInstance) categoryChartInstance.destroy();
+
+      categoryChartInstance = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(catTotals),
+          datasets: [{
+            data: Object.values(catTotals),
+            backgroundColor: ['#3b82f6', '#6366f1', '#f59e0b', '#a855f7', '#10b981', '#64748b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } },
+            title: { display: true, text: 'Distribusi Durasi per Kategori (Menit)', color: '#f8fafc', font: { size: 12 } }
+          }
         }
+      });
 
-        // Calculate Statistics
-        function updateStats() {
-            const todayStr = new Date().toISOString().split('T')[0];
+      // 2. Bar Chart (Trend 7 Hari)
+      const last7Days = [];
+      const dayDurations = Array(7).fill(0);
+      
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        last7Days.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
+      }
 
-            // 1. Today's stats
-            const todayActivities = activities.filter(a => a.date === todayStr);
-            const todayDuration = todayActivities.reduce((sum, a) => sum + (Number(a.duration) || 0), 0);
-            
-            document.getElementById('statTodayDuration').textContent = `${todayDuration} mnt`;
-            document.getElementById('statTodayCount').textContent = `${todayActivities.length} entri`;
-
-            // 2. Weekly Total (Past 7 Days)
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-            sevenDaysAgo.setHours(0,0,0,0);
-
-            const weeklyActivities = activities.filter(a => new Date(a.date) >= sevenDaysAgo);
-            const weeklyDurationMin = weeklyActivities.reduce((sum, a) => sum + (Number(a.duration) || 0), 0);
-            const weeklyHours = (weeklyDurationMin / 60).toFixed(1);
-
-            document.getElementById('statWeeklyDuration').textContent = `${weeklyHours} jam`;
-
-            // 3. Top Category
-            const categoryCounts = {};
-            activities.forEach(a => {
-                categoryCounts[a.category] = (categoryCounts[a.category] || 0) + (Number(a.duration) || 0);
-            });
-
-            let topCategory = '-';
-            let maxDuration = 0;
-            for (const [cat, dur] of Object.entries(categoryCounts)) {
-                if (dur > maxDuration) {
-                    maxDuration = dur;
-                    topCategory = cat.split('/')[0]; // Short version
-                }
-            }
-            document.getElementById('statTopCategory').textContent = topCategory;
+      data.forEach(item => {
+        const itemDate = new Date(item.dateTime);
+        const now = new Date();
+        const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays < 7) {
+          dayDurations[6 - diffDays] += Number(item.duration);
         }
+      });
 
-        // Render History Table
-        function renderActivities() {
-            const tbody = document.getElementById('activityTableBody');
-            const emptyState = document.getElementById('emptyState');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            const filterCat = document.getElementById('filterCategory').value;
+      const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
+      if (weeklyChartInstance) weeklyChartInstance.destroy();
 
-            // Filter logic
-            const filtered = activities.filter(act => {
-                const matchesSearch = act.name.toLowerCase().includes(searchVal) || 
-                                     (act.notes && act.notes.toLowerCase().includes(searchVal));
-                const matchesCategory = filterCat === 'ALL' || act.category === filterCat;
-                return matchesSearch && matchesCategory;
-            });
-
-            document.getElementById('activityCountBadge').textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-
-            tbody.innerHTML = filtered.map(act => {
-                const conf = CATEGORY_CONFIG[act.category] || CATEGORY_CONFIG['Lainnya'];
-                
-                // Format Date neatly (DD MMM YYYY)
-                const dateObj = new Date(act.date);
-                const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-
-                return `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap">${formattedDate}</td>
-                        <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(act.name)}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">
-                            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-medium ${conf.bg} ${conf.text} border ${conf.border}">
-                                <i class="fa-solid ${conf.icon} text-[10px]"></i>
-                                <span>${act.category}</span>
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 font-semibold text-slate-700 whitespace-nowrap">${act.duration} mnt</td>
-                        <td class="py-3 px-4 text-slate-500">${act.distance ? escapeHtml(act.distance) : '-'}</td>
-                        <td class="py-3 px-4 text-slate-500 max-w-xs truncate" title="${escapeHtml(act.notes || '')}">${act.notes ? escapeHtml(act.notes) : '<span class="text-slate-300">-</span>'}</td>
-                        <td class="py-3 px-4 text-center whitespace-nowrap">
-                            <button onclick="deleteActivity('${act.id}')" class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors flex items-center justify-center mx-auto" title="Hapus">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+      weeklyChartInstance = new Chart(ctxWeekly, {
+        type: 'bar',
+        data: {
+          labels: last7Days,
+          datasets: [{
+            label: 'Durasi (Menit)',
+            data: dayDurations,
+            backgroundColor: '#6366f1',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Aktivitas 7 Hari Terakhir (Menit)', color: '#f8fafc', font: { size: 12 } }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+          }
         }
+      });
+    }
 
-        // Initialize Chart.js
-        function initCharts() {
-            // 1. Pie Chart
-            const ctxPie = document.getElementById('categoryPieChart').getContext('2d');
-            pieChartInstance = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { family: 'Inter', size: 11 }, boxWidth: 12 }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
+    // UTILS
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
 
-            // 2. Weekly Bar Chart
-            const ctxBar = document.getElementById('weeklyBarChart').getContext('2d');
-            barChartInstance = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Durasi (Menit)',
-                        data: [],
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9' },
-                            ticks: { font: { family: 'Inter', size: 10 } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { family: 'Inter', size: 10 } }
-                        }
-                    }
-                }
-            });
-        }
+      toastMsg.innerText = msg;
+      if (type === 'success') {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-xmark text-red-400 text-lg';
+      }
 
-        // Update Charts Data
-        function updateCharts() {
-            if (!pieChartInstance || !barChartInstance) return;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
 
-            // --- Update Pie Chart ---
-            const catTotals = {};
-            Object.keys(CATEGORY_CONFIG).forEach(cat => catTotals[cat] = 0);
-
-            activities.forEach(a => {
-                if (catTotals[a.category] !== undefined) {
-                    catTotals[a.category] += Number(a.duration) || 0;
-                } else {
-                    catTotals['Lainnya'] += Number(a.duration) || 0;
-                }
-            });
-
-            const activeCategories = Object.keys(catTotals).filter(cat => catTotals[cat] > 0);
-            const pieData = activeCategories.map(cat => catTotals[cat]);
-            const pieColors = activeCategories.map(cat => CATEGORY_CONFIG[cat].color);
-
-            pieChartInstance.data.labels = activeCategories;
-            pieChartInstance.data.datasets[0].data = pieData;
-            pieChartInstance.data.datasets[0].backgroundColor = pieColors;
-            pieChartInstance.update();
-
-            // --- Update Bar Chart (Past 7 Days) ---
-            const days = [];
-            const dayLabels = [];
-            const dayDurations = [];
-
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const dayName = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
-
-                days.push(dateStr);
-                dayLabels.push(dayName);
-
-                // Sum duration for this day
-                const dayTotal = activities
-                    .filter(a => a.date === dateStr)
-                    .reduce((sum, a) => sum + (Number(a.duration) || 0), 0);
-                dayDurations.push(dayTotal);
-            }
-
-            barChartInstance.data.labels = dayLabels;
-            barChartInstance.data.datasets[0].data = dayDurations;
-            barChartInstance.update();
-        }
-
-        // Master App Refresh
-        function updateApp() {
-            updateStats();
-            renderActivities();
-            updateCharts();
-        }
-
-        // Export Data to JSON File
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activities, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `actitrack_backup_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-
-            showToast('Data berhasil diekspor sebagai file JSON!', 'success');
-        }
-
-        // Import Data from JSON File
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        activities = imported;
-                        saveDataToStorage();
-                        updateApp();
-                        showToast('Data berhasil diimpor!', 'success');
-                    } else {
-                        showToast('Format JSON tidak valid!', 'error');
-                    }
-                } catch (err) {
-                    showToast('Gagal membaca file JSON!', 'error');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = ''; // Reset input
-        }
-
-        // Reset Confirmation Modal
-        function confirmResetData() {
-            const modal = document.getElementById('confirmModal');
-            const confirmBtn = document.getElementById('modalConfirmBtn');
-            modal.classList.remove('hidden');
-
-            confirmBtn.onclick = () => {
-                activities = [];
-                saveDataToStorage();
-                updateApp();
-                closeModal();
-                showToast('Semua data berhasil direset!', 'info');
-            };
-        }
-
-        function closeModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-        }
-
-        // Helper: Toast Notifications
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-
-            const bgColors = {
-                success: 'bg-emerald-600 text-white',
-                error: 'bg-rose-600 text-white',
-                info: 'bg-slate-800 text-white'
-            };
-
-            const icons = {
-                success: 'fa-circle-check',
-                error: 'fa-circle-xmark',
-                info: 'fa-circle-info'
-            };
-
-            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg font-medium text-xs flex items-center space-x-2 transition-all duration-300 transform translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
-            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
-
-            container.appendChild(toast);
-
-            // Animate in
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            // Animate out & remove
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Helper: Escape HTML string to prevent XSS
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    </script>
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+  </script>
 </body>
 </html>
