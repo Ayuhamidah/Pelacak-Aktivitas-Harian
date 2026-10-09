@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,12 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Konfigurasi Tailwind Dark Mode berbasis Class
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,44 +29,47 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     .glass-card {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex flex-col justify-center items-center">
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 flex flex-col justify-center items-center">
 
   <!-- ==================== 1. FORM AUTH (LOGIN / REGISTER) ==================== -->
-  <div id="authContainer" class="w-full max-w-md glass-card rounded-2xl p-8 space-y-6">
-    <div class="text-center">
-      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-        Pelacak Aktivitas
-      </h1>
-      <p class="text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
+  <div id="authContainer" class="w-full max-w-md glass-card bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-8 space-y-6 shadow-xl">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+          Pelacak Aktivitas
+        </h1>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
+      </div>
+      <!-- Theme Toggle Auth -->
+      <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+        <i id="themeIconAuth" class="fa-solid fa-moon"></i>
+      </button>
     </div>
 
     <!-- TAB SWITCHER -->
-    <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700">
-      <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition">Masuk</button>
-      <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Daftar</button>
+    <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+      <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm">Masuk</button>
+      <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Daftar</button>
     </div>
 
     <form id="authForm" class="space-y-4">
       <div>
-        <label class="block text-xs text-slate-400 mb-1">Email</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
         <input type="email" id="authEmail" placeholder="nama@email.com" required
-          class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+          class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
       </div>
 
       <div>
-        <label class="block text-xs text-slate-400 mb-1">Kata Sandi</label>
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kata Sandi</label>
         <input type="password" id="authPassword" placeholder="••••••••" required minlength="6"
-          class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+          class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
       </div>
 
       <button type="submit" id="btnAuthSubmit"
@@ -70,26 +79,31 @@
     </form>
   </div>
 
-  <!-- ==================== 2. MAIN APP DASHBOARD (HIDDEN BY DEFAULT) ==================== -->
+  <!-- ==================== 2. MAIN APP DASHBOARD ==================== -->
   <div id="appContainer" class="w-full max-w-7xl space-y-6 hidden">
     
     <!-- HEADER -->
-    <header class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+    <header class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm dark:shadow-none">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
           Pelacak Aktivitas Harian
         </h1>
-        <p class="text-slate-400 text-sm mt-1">Data tersimpan secara privat & tersinkronisasi Cloud</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Data tersimpan secara privat & tersinkronisasi Cloud</p>
       </div>
 
       <div class="flex items-center gap-4">
+        <!-- Theme Toggle App -->
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Ubah Mode Tampilan">
+          <i id="themeIconApp" class="fa-solid fa-moon"></i>
+        </button>
+
         <div class="text-right">
-          <p id="userEmailDisplay" class="text-xs font-semibold text-white">user@email.com</p>
-          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-400">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Private Storage Active
+          <p id="userEmailDisplay" class="text-xs font-semibold text-slate-800 dark:text-white">user@email.com</p>
+          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Private Storage Active
           </span>
         </div>
-        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-2">
+        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-2">
           <i class="fa-solid fa-right-from-bracket"></i> Keluar
         </button>
       </div>
@@ -97,28 +111,28 @@
 
     <!-- METRICS CARDS -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card rounded-2xl p-5 border-l-4 border-blue-500">
-        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
-        <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-white">0 Menit</h3>
-        <p id="statTodaySub" class="text-xs text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm dark:shadow-none">
+        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
+        <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Menit</h3>
+        <p id="statTodaySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
       </div>
 
-      <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500">
-        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
-        <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-white">0 Jam</h3>
-        <p id="statTotalCount" class="text-xs text-slate-500 mt-1">0 total entri tersimpan</p>
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-indigo-500 shadow-sm dark:shadow-none">
+        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
+        <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Jam</h3>
+        <p id="statTotalCount" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 total entri tersimpan</p>
       </div>
 
-      <div class="glass-card rounded-2xl p-5 border-l-4 border-purple-500">
-        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
-        <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-white">-</h3>
-        <p id="statTopCategorySub" class="text-xs text-slate-500 mt-1">Berdasarkan frekuensi</p>
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-purple-500 shadow-sm dark:shadow-none">
+        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
+        <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">-</h3>
+        <p id="statTopCategorySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi</p>
       </div>
 
-      <div class="glass-card rounded-2xl p-5 border-l-4 border-emerald-500">
-        <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
-        <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-white truncate">-</h3>
-        <p id="statLastTime" class="text-xs text-slate-500 mt-1">Belum ada data</p>
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-emerald-500 shadow-sm dark:shadow-none">
+        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
+        <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white truncate">-</h3>
+        <p id="statLastTime" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Belum ada data</p>
       </div>
     </div>
 
@@ -126,29 +140,29 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- FORM INPUT -->
-      <div class="glass-card rounded-2xl p-6 lg:col-span-1 space-y-4">
-        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-blue-400"></i> Tambah Aktivitas
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm dark:shadow-none">
+        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-blue-500 dark:text-blue-400"></i> Tambah Aktivitas
         </h2>
 
         <form id="activityForm" class="space-y-4">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Tanggal & Waktu</label>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
             <input type="datetime-local" id="inputDateTime" required
-              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
           </div>
 
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Nama Aktivitas</label>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
             <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
-              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Kategori</label>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
               <select id="inputCategory" required
-                class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
                 <option value="Olahraga">🏃 Olahraga</option>
                 <option value="Belajar">📚 Belajar</option>
                 <option value="Pekerjaan">💼 Pekerjaan</option>
@@ -159,16 +173,16 @@
             </div>
 
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Durasi (Menit)</label>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
               <input type="number" id="inputDuration" min="1" placeholder="30" required
-                class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition" />
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Catatan Opsional</label>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
             <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
-              class="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
           </div>
 
           <button type="submit" id="btnSubmit"
@@ -179,9 +193,9 @@
       </div>
 
       <!-- CHARTS -->
-      <div class="glass-card rounded-2xl p-6 lg:col-span-2 space-y-4">
-        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-purple-400"></i> Analisis & Grafik
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-4 shadow-sm dark:shadow-none">
+        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -197,18 +211,18 @@
     </div>
 
     <!-- TABLE & FILTER SECTION -->
-    <div class="glass-card rounded-2xl p-6 space-y-4">
+    <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-emerald-400"></i> Riwayat Aktivitas Pribadi
+        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-emerald-500 dark:text-emerald-400"></i> Riwayat Aktivitas Pribadi
         </h2>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <input type="text" id="searchFilter" placeholder="Cari aktivitas..."
-            class="bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
+            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
 
           <select id="categoryFilter"
-            class="bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
             <option value="ALL">Semua Kategori</option>
             <option value="Olahraga">Olahraga</option>
             <option value="Belajar">Belajar</option>
@@ -220,9 +234,9 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-800">
-        <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-800/60 text-xs uppercase text-slate-400">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+          <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
             <tr>
               <th class="p-3">Waktu</th>
               <th class="p-3">Aktivitas</th>
@@ -232,9 +246,9 @@
               <th class="p-3 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody id="activityTableBody" class="divide-y divide-slate-800">
+          <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
             <tr>
-              <td colspan="6" class="text-center p-6 text-slate-500">Memuat data pribadi Anda...</td>
+              <td colspan="6" class="text-center p-6 text-slate-400">Memuat data pribadi Anda...</td>
             </tr>
           </tbody>
         </table>
@@ -244,7 +258,7 @@
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
+  <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
     <span id="toastMessage" class="text-xs font-medium">Pesan notifikasi</span>
   </div>
@@ -252,10 +266,40 @@
   <!-- JAVASCRIPT & FIREBASE INTEGRATION -->
   <script>
     // =============================================================
+    // 0. THEME TOGGLE LOGIC (DARK / LIGHT MODE)
+    // =============================================================
+    const htmlEl = document.documentElement;
+    const currentTheme = localStorage.getItem('appTheme') || 'dark';
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        htmlEl.classList.add('dark');
+        document.getElementById('themeIconAuth').className = 'fa-solid fa-sun';
+        document.getElementById('themeIconApp').className = 'fa-solid fa-sun';
+      } else {
+        htmlEl.classList.remove('dark');
+        document.getElementById('themeIconAuth').className = 'fa-solid fa-moon';
+        document.getElementById('themeIconApp').className = 'fa-solid fa-moon';
+      }
+      localStorage.setItem('appTheme', theme);
+      if (typeof renderCharts === 'function' && allActivities) {
+        renderCharts(allActivities);
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = htmlEl.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+    }
+
+    // Apply initial theme
+    applyTheme(currentTheme);
+
+    // =============================================================
     // 1. FIREBASE CONFIG
     // =============================================================
     const firebaseConfig = {
-      apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c", // Ganti dengan API Key asli kamu
+      apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c", // Ganti dengan API Key asli milikmu
       authDomain: "crudfb3.firebaseapp.com",
       databaseURL: "https://crudfb3.firebaseio.com",
       projectId: "crudfb3",
@@ -292,7 +336,6 @@
         document.body.classList.remove('flex', 'flex-col', 'justify-center', 'items-center');
         document.getElementById('userEmailDisplay').innerText = user.email;
 
-        // Path penyimpanan privat spesifik per User ID (users/UID/activities)
         userActivitiesRef = db.ref(`users/${user.uid}/activities`);
         listenToUserActivities();
         showToast(`Selamat datang, ${user.email}!`, 'success');
@@ -305,7 +348,6 @@
       }
     });
 
-    // Switch Tab Mode (Login / Register)
     function switchAuthTab(mode) {
       isLoginMode = mode === 'login';
       const btnLogin = document.getElementById('btnTabLogin');
@@ -314,19 +356,18 @@
       const subtitle = document.getElementById('authSubtitle');
 
       if (isLoginMode) {
-        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition";
-        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm";
+        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
         btnSubmit.innerText = "Masuk";
         subtitle.innerText = "Masuk untuk mengelola data aktivitas pribadi kamu";
       } else {
-        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition";
-        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        btnRegister.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm";
+        btnLogin.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
         btnSubmit.innerText = "Daftar Akun Baru";
         subtitle.innerText = "Buat akun privat baru untuk menyimpan aktivitas kamu";
       }
     }
 
-    // Handle Login / Register Form Submit
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('authEmail').value;
@@ -382,7 +423,7 @@
     }
 
     // =============================================================
-    // 4. ADD & DELETE PRIVATE ACTIVITIES
+    // 4. ADD & DELETE ACTIVITIES
     // =============================================================
     document.getElementById('activityForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -465,7 +506,7 @@
       tbody.innerHTML = '';
 
       if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-500">Belum ada aktivitas tercatat di akun ini.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400">Belum ada aktivitas tercatat di akun ini.</td></tr>`;
         return;
       }
 
@@ -475,28 +516,28 @@
         const formattedTime = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
         const badgeColors = {
-          'Olahraga': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-          'Belajar': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-          'Pekerjaan': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-          'Hiburan': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-          'Istirahat': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-          'Lainnya': 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+          'Olahraga': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+          'Belajar': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+          'Pekerjaan': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+          'Hiburan': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+          'Istirahat': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+          'Lainnya': 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
         };
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-800/40 transition";
+        tr.className = "hover:bg-slate-100/50 dark:hover:bg-slate-800/40 transition";
         tr.innerHTML = `
-          <td class="p-3 text-xs text-slate-400 font-mono">${formattedDate}, ${formattedTime}</td>
-          <td class="p-3 font-medium text-white">${escapeHtml(item.title)}</td>
+          <td class="p-3 text-xs text-slate-500 dark:text-slate-400 font-mono">${formattedDate}, ${formattedTime}</td>
+          <td class="p-3 font-medium text-slate-800 dark:text-white">${escapeHtml(item.title)}</td>
           <td class="p-3">
             <span class="px-2.5 py-1 rounded-full text-xs font-medium border ${badgeColors[item.category] || badgeColors['Lainnya']}">
               ${item.category}
             </span>
           </td>
-          <td class="p-3 text-xs font-semibold text-slate-200">${item.duration} Mins</td>
-          <td class="p-3 text-xs text-slate-400 max-w-xs truncate">${item.notes ? escapeHtml(item.notes) : '-'}</td>
+          <td class="p-3 text-xs font-semibold text-slate-700 dark:text-slate-200">${item.duration} Mins</td>
+          <td class="p-3 text-xs text-slate-500 dark:text-slate-400 max-w-xs truncate">${item.notes ? escapeHtml(item.notes) : '-'}</td>
           <td class="p-3 text-right">
-            <button onclick="deleteActivity('${item.id}')" class="text-slate-500 hover:text-red-400 transition p-1 text-xs">
+            <button onclick="deleteActivity('${item.id}')" class="text-slate-400 hover:text-red-500 transition p-1 text-xs">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -544,6 +585,11 @@
     }
 
     function renderCharts(data) {
+      const isDark = htmlEl.classList.contains('dark');
+      const textColor = isDark ? '#f8fafc' : '#1e293b';
+      const subTextColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+
       const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
       data.forEach(item => {
         if (catTotals[item.category] !== undefined) {
@@ -569,8 +615,8 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } },
-            title: { display: true, text: 'Distribusi Durasi (Menit)', color: '#f8fafc', font: { size: 12 } }
+            legend: { position: 'bottom', labels: { color: subTextColor, font: { size: 10 } } },
+            title: { display: true, text: 'Distribusi Durasi (Menit)', color: textColor, font: { size: 12 } }
           }
         }
       });
@@ -610,11 +656,11 @@
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            title: { display: true, text: 'Aktivitas 7 Hari Terakhir', color: '#f8fafc', font: { size: 12 } }
+            title: { display: true, text: 'Aktivitas 7 Hari Terakhir', color: textColor, font: { size: 12 } }
           },
           scales: {
-            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+            x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { color: gridColor } }
           }
         }
       });
