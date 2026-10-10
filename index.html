@@ -8,7 +8,6 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Konfigurasi Tailwind Dark Mode berbasis Class
     tailwind.config = {
       darkMode: 'class',
     }
@@ -20,11 +19,11 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- Firebase SDK (Compat) -->
+  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
     body {
@@ -37,7 +36,7 @@
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 flex flex-col justify-center items-center">
-      
+
   <!-- ==================== 1. FORM AUTH (LOGIN / REGISTER) ==================== -->
   <div id="authContainer" class="w-full max-w-md glass-card bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-8 space-y-6 shadow-xl">
     <div class="flex justify-between items-center">
@@ -47,13 +46,12 @@
         </h1>
         <p class="text-slate-500 dark:text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
       </div>
-      <!-- Theme Toggle Auth -->
       <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
         <i id="themeIconAuth" class="fa-solid fa-moon"></i>
       </button>
     </div>
 
-    <!-- TAB SWITCHER -->
+    <!-- TAB SWITCHER AUTH -->
     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
       <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm">Masuk</button>
       <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Daftar</button>
@@ -79,10 +77,10 @@
     </form>
   </div>
 
-  <!-- ==================== 2. MAIN APP DASHBOARD ==================== -->
+  <!-- ==================== 2. MAIN APP DASHBOARD & PROFILE ==================== -->
   <div id="appContainer" class="w-full max-w-7xl space-y-6 hidden">
     
-    <!-- HEADER -->
+    <!-- HEADER & NAV TAB -->
     <header class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm dark:shadow-none">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
@@ -91,167 +89,272 @@
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Data tersimpan secara privat & tersinkronisasi Cloud</p>
       </div>
 
-      <div class="flex items-center gap-4">
-        <!-- Theme Toggle App -->
-        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Ubah Mode Tampilan">
+      <!-- NAV BUTTONS & USER PROFILE HEAD -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- APP VIEW SWITCHER -->
+        <div class="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <button id="navBtnDashboard" onclick="switchNavTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </button>
+          <button id="navBtnProfile" onclick="switchNavTab('profile')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-user"></i> Profil Saya
+          </button>
+        </div>
+
+        <!-- THEME TOGGLE -->
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Ubah Tema">
           <i id="themeIconApp" class="fa-solid fa-moon"></i>
         </button>
 
-        <div class="text-right">
-          <p id="userEmailDisplay" class="text-xs font-semibold text-slate-800 dark:text-white">user@email.com</p>
+        <div class="text-right pl-2 border-l border-slate-200 dark:border-slate-700">
+          <p id="userEmailDisplay" class="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[150px]">user@email.com</p>
           <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Private Storage Active
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online
           </span>
         </div>
-        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-2">
+
+        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <i class="fa-solid fa-right-from-bracket"></i> Keluar
         </button>
       </div>
     </header>
 
-    <!-- METRICS CARDS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm dark:shadow-none">
-        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
-        <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Menit</h3>
-        <p id="statTodaySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
+    <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+    <div id="dashboardView" class="space-y-6">
+      <!-- METRICS CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm dark:shadow-none">
+          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
+          <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Menit</h3>
+          <p id="statTodaySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
+        </div>
+
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-indigo-500 shadow-sm dark:shadow-none">
+          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
+          <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Jam</h3>
+          <p id="statTotalCount" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 total entri tersimpan</p>
+        </div>
+
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-purple-500 shadow-sm dark:shadow-none">
+          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
+          <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">-</h3>
+          <p id="statTopCategorySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi</p>
+        </div>
+
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-emerald-500 shadow-sm dark:shadow-none">
+          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
+          <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white truncate">-</h3>
+          <p id="statLastTime" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Belum ada data</p>
+        </div>
       </div>
 
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-indigo-500 shadow-sm dark:shadow-none">
-        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
-        <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Jam</h3>
-        <p id="statTotalCount" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 total entri tersimpan</p>
-      </div>
+      <!-- MAIN CONTENT GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- FORM INPUT -->
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm dark:shadow-none">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle text-blue-500 dark:text-blue-400"></i> Tambah Aktivitas
+          </h2>
 
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-purple-500 shadow-sm dark:shadow-none">
-        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
-        <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">-</h3>
-        <p id="statTopCategorySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi</p>
-      </div>
-
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-emerald-500 shadow-sm dark:shadow-none">
-        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
-        <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white truncate">-</h3>
-        <p id="statLastTime" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Belum ada data</p>
-      </div>
-    </div>
-
-    <!-- MAIN CONTENT GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- FORM INPUT -->
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm dark:shadow-none">
-        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-blue-500 dark:text-blue-400"></i> Tambah Aktivitas
-        </h2>
-
-        <form id="activityForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
-            <input type="datetime-local" id="inputDateTime" required
-              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
-            <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
-              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
+          <form id="activityForm" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
-              <select id="inputCategory" required
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
-                <option value="Olahraga">🏃 Olahraga</option>
-                <option value="Belajar">📚 Belajar</option>
-                <option value="Pekerjaan">💼 Pekerjaan</option>
-                <option value="Hiburan">🎮 Hiburan</option>
-                <option value="Istirahat">😴 Istirahat</option>
-                <option value="Lainnya">✨ Lainnya</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
-              <input type="number" id="inputDuration" min="1" placeholder="30" required
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
+              <input type="datetime-local" id="inputDateTime" required
                 class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
             </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
+              <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
+                <select id="inputCategory" required
+                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+                  <option value="Olahraga">🏃 Olahraga</option>
+                  <option value="Belajar">📚 Belajar</option>
+                  <option value="Pekerjaan">💼 Pekerjaan</option>
+                  <option value="Hiburan">🎮 Hiburan</option>
+                  <option value="Istirahat">😴 Istirahat</option>
+                  <option value="Lainnya">✨ Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
+                <input type="number" id="inputDuration" min="1" placeholder="30" required
+                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
+              <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmit"
+              class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
+            </button>
+          </form>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-4 shadow-sm dark:shadow-none">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div class="h-64 flex justify-center items-center">
+              <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="h-64 flex justify-center items-center">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE & FILTER SECTION -->
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-emerald-500 dark:text-emerald-400"></i> Riwayat Aktivitas Pribadi
+          </h2>
+
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <input type="text" id="searchFilter" placeholder="Cari aktivitas..."
+              class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
+
+            <select id="categoryFilter"
+              class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+              <option value="ALL">Semua Kategori</option>
+              <option value="Olahraga">Olahraga</option>
+              <option value="Belajar">Belajar</option>
+              <option value="Pekerjaan">Pekerjaan</option>
+              <option value="Hiburan">Hiburan</option>
+              <option value="Istirahat">Istirahat</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+          <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
+              <tr>
+                <th class="p-3">Waktu</th>
+                <th class="p-3">Aktivitas</th>
+                <th class="p-3">Kategori</th>
+                <th class="p-3">Durasi</th>
+                <th class="p-3">Catatan</th>
+                <th class="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+              <tr>
+                <td colspan="6" class="text-center p-6 text-slate-400">Memuat data pribadi Anda...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 2: PROFILE PAGE ==================== -->
+    <div id="profileView" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- PROFILE SUMMARY CARD -->
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-6 shadow-sm dark:shadow-none text-center">
+          <div class="relative inline-block">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold mx-auto shadow-lg shadow-blue-500/20" id="profileAvatar">
+              U
+            </div>
+            <span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
-            <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
-              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white" id="profileDisplayName">Pengguna</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="profileEmail">user@email.com</p>
           </div>
 
-          <button type="submit" id="btnSubmit"
-            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
-          </button>
-        </form>
-      </div>
-
-      <!-- CHARTS -->
-      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-4 shadow-sm dark:shadow-none">
-        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          <div class="h-64 flex justify-center items-center">
-            <canvas id="categoryChart"></canvas>
-          </div>
-          <div class="h-64 flex justify-center items-center">
-            <canvas id="weeklyChart"></canvas>
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-700/60 grid grid-cols-2 gap-4 text-left">
+            <div>
+              <p class="text-[10px] uppercase font-semibold text-slate-400">Status Akun</p>
+              <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">Terverifikasi (Private)</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase font-semibold text-slate-400">Bergabung</p>
+              <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-0.5" id="profileCreatedDate">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase font-semibold text-slate-400">Total Aktivitas</p>
+              <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-0.5" id="profileTotalEntries">0 Entri</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase font-semibold text-slate-400">Total Jam Dicatat</p>
+              <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-0.5" id="profileTotalHours">0 Jam</p>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
+        <!-- PROFILE EDIT & SECURITY SETTINGS -->
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-6 shadow-sm dark:shadow-none">
+          <!-- FORM EDIT NAMA -->
+          <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-id-card text-blue-500 dark:text-blue-400"></i> Pengaturan Informasi Profil
+            </h2>
 
-    <!-- TABLE & FILTER SECTION -->
-    <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-emerald-500 dark:text-emerald-400"></i> Riwayat Aktivitas Pribadi
-        </h2>
+            <form id="updateProfileForm" class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Tampilan (Display Name)</label>
+                <input type="text" id="inputDisplayName" placeholder="Nama Anda" required
+                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+              </div>
 
-        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <input type="text" id="searchFilter" placeholder="Cari aktivitas..."
-            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
+              <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Alamat Email (Permanen)</label>
+                <input type="email" id="inputProfileEmail" disabled
+                  class="w-full bg-slate-200/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-500 dark:text-slate-500 cursor-not-allowed" />
+              </div>
 
-          <select id="categoryFilter"
-            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
-            <option value="ALL">Semua Kategori</option>
-            <option value="Olahraga">Olahraga</option>
-            <option value="Belajar">Belajar</option>
-            <option value="Pekerjaan">Pekerjaan</option>
-            <option value="Hiburan">Hiburan</option>
-            <option value="Istirahat">Istirahat</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
+              <button type="submit" id="btnUpdateProfile"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-md shadow-blue-500/20">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Profil
+              </button>
+            </form>
+          </div>
+
+          <hr class="border-slate-200 dark:border-slate-700/60" />
+
+          <!-- FORM UBAH KATA SANDI -->
+          <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-lock text-purple-500 dark:text-purple-400"></i> Keamanan & Kata Sandi
+            </h2>
+
+            <form id="updatePasswordForm" class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kata Sandi Baru</label>
+                <input type="password" id="inputNewPassword" placeholder="Minimum 6 karakter" required minlength="6"
+                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+              </div>
+
+              <button type="submit" id="btnUpdatePassword"
+                class="bg-purple-600 hover:bg-purple-500 text-white font-medium px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-md shadow-purple-500/20">
+                <i class="fa-solid fa-key"></i> Perbarui Kata Sandi
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-        <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-          <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
-            <tr>
-              <th class="p-3">Waktu</th>
-              <th class="p-3">Aktivitas</th>
-              <th class="p-3">Kategori</th>
-              <th class="p-3">Durasi</th>
-              <th class="p-3">Catatan</th>
-              <th class="p-3 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-            <tr>
-              <td colspan="6" class="text-center p-6 text-slate-400">Memuat data pribadi Anda...</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
 
@@ -265,16 +368,16 @@
 
   <!-- JAVASCRIPT & FIREBASE INTEGRATION -->
   <script>
-       //=============================================================
-       // 1. DEKLARASI VARIABEL UTAMA (WAJIB DI PALING ATAS)
-       //=============================================================
+    // =============================================================
+    // 1. DEKLARASI VARIABEL UTAMA (HANYA SEKALI DI PALING ATAS)
+    // =============================================================
     let allActivities = [];
     let currentUser = null;
     let userActivitiesRef = null;
     let isLoginMode = true;
     let categoryChartInstance = null;
     let weeklyChartInstance = null;
-  
+
     // =============================================================
     // 2. THEME TOGGLE LOGIC (DARK / LIGHT MODE)
     // =============================================================
@@ -282,17 +385,21 @@
     const currentTheme = localStorage.getItem('appTheme') || 'dark';
 
     function applyTheme(theme) {
+      const iconAuth = document.getElementById('themeIconAuth');
+      const iconApp = document.getElementById('themeIconApp');
+
       if (theme === 'dark') {
         htmlEl.classList.add('dark');
-        document.getElementById('themeIconAuth').className = 'fa-solid fa-sun';
-        document.getElementById('themeIconApp').className = 'fa-solid fa-sun';
+        if (iconAuth) iconAuth.className = 'fa-solid fa-sun';
+        if (iconApp) iconApp.className = 'fa-solid fa-sun';
       } else {
         htmlEl.classList.remove('dark');
-        document.getElementById('themeIconAuth').className = 'fa-solid fa-moon';
-        document.getElementById('themeIconApp').className = 'fa-solid fa-moon';
+        if (iconAuth) iconAuth.className = 'fa-solid fa-moon';
+        if (iconApp) iconApp.className = 'fa-solid fa-moon';
       }
       localStorage.setItem('appTheme', theme);
-      if (typeof renderCharts === 'function' && allActivities) {
+
+      if (typeof renderCharts === 'function' && allActivities && allActivities.length > 0) {
         renderCharts(allActivities);
       }
     }
@@ -302,21 +409,20 @@
       applyTheme(isDark ? 'light' : 'dark');
     }
 
-    // Apply initial theme
     applyTheme(currentTheme);
 
     // =============================================================
-    // 1. FIREBASE CONFIG
+    // 3. FIREBASE CONFIG & INITIALIZATION
     // =============================================================
-   const firebaseConfig = {
-    apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c",
-    authDomain: "crudfb3.firebaseapp.com",
-    databaseURL: "https://crudfb3.firebaseio.com",
-    projectId: "crudfb3",
-    storageBucket: "crudfb3.firebasestorage.app",
-    messagingSenderId: "970524897736",
-    appId: "1:970524897736:web:33a524ae05c33ee95d90fd"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c", // Ganti dengan API Key asli milikmu
+      authDomain: "crudfb3.firebaseapp.com",
+      databaseURL: "https://crudfb3.firebaseio.com",
+      projectId: "crudfb3",
+      storageBucket: "crudfb3.appspot.com",
+      messagingSenderId: "970524897736",
+      appId: "1:970524897736:web:33a524ae05c33ee95d90fd"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -328,7 +434,7 @@
     document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
 
     // =============================================================
-    // 2. AUTHENTICATION STATE OBSERVER
+    // 4. AUTHENTICATION STATE OBSERVER
     // =============================================================
     auth.onAuthStateChanged((user) => {
       if (user) {
@@ -336,11 +442,13 @@
         document.getElementById('authContainer').classList.add('hidden');
         document.getElementById('appContainer').classList.remove('hidden');
         document.body.classList.remove('flex', 'flex-col', 'justify-center', 'items-center');
-        document.getElementById('userEmailDisplay').innerText = user.email;
+
+        // Populate User Info
+        updateProfileUI(user);
 
         userActivitiesRef = db.ref(`users/${user.uid}/activities`);
         listenToUserActivities();
-        showToast(`Selamat datang, ${user.email}!`, 'success');
+        showToast(`Selamat datang, ${user.displayName || user.email}!`, 'success');
       } else {
         currentUser = null;
         userActivitiesRef = null;
@@ -401,7 +509,101 @@
     }
 
     // =============================================================
-    // 3. LISTEN TO USER'S PRIVATE DATA
+    // 5. NAVIGATION SWITCHER (DASHBOARD VS PROFILE)
+    // =============================================================
+    function switchNavTab(tab) {
+      const btnDash = document.getElementById('navBtnDashboard');
+      const btnProf = document.getElementById('navBtnProfile');
+      const viewDash = document.getElementById('dashboardView');
+      const viewProf = document.getElementById('profileView');
+
+      if (tab === 'dashboard') {
+        btnDash.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2 shadow-sm";
+        btnProf.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2";
+        viewDash.classList.remove('hidden');
+        viewProf.classList.add('hidden');
+      } else {
+        btnProf.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2 shadow-sm";
+        btnDash.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2";
+        viewProf.classList.remove('hidden');
+        viewDash.classList.add('hidden');
+      }
+    }
+
+    // =============================================================
+    // 6. PROFILE MANAGEMENT & UPDATES
+    // =============================================================
+    function updateProfileUI(user) {
+      const dName = user.displayName || user.email.split('@')[0];
+      
+      document.getElementById('userEmailDisplay').innerText = dName;
+      document.getElementById('profileDisplayName').innerText = dName;
+      document.getElementById('profileEmail').innerText = user.email;
+      document.getElementById('inputDisplayName').value = dName;
+      document.getElementById('inputProfileEmail').value = user.email;
+      
+      // Avatar initial
+      document.getElementById('profileAvatar').innerText = dName.charAt(0).toUpperCase();
+
+      // Created date
+      if (user.metadata && user.metadata.creationTime) {
+        const createdDate = new Date(user.metadata.creationTime);
+        document.getElementById('profileCreatedDate').innerText = createdDate.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+      }
+    }
+
+    // Update Display Name Form
+    document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const newName = document.getElementById('inputDisplayName').value.trim();
+      const btn = document.getElementById('btnUpdateProfile');
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+
+        await currentUser.updateProfile({ displayName: newName });
+        updateProfileUI(currentUser);
+        
+        showToast("Nama profil berhasil diperbarui!", "success");
+      } catch (err) {
+        console.error("Profile Update Error:", err);
+        showToast("Gagal memperbarui profil", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Profil`;
+      }
+    });
+
+    // Update Password Form
+    document.getElementById('updatePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const newPassword = document.getElementById('inputNewPassword').value;
+      const btn = document.getElementById('btnUpdatePassword');
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses...`;
+
+        await currentUser.updatePassword(newPassword);
+        document.getElementById('inputNewPassword').value = '';
+        
+        showToast("Kata sandi berhasil diperbarui!", "success");
+      } catch (err) {
+        console.error("Password Update Error:", err);
+        showToast(err.message || "Gagal memperbarui kata sandi. Coba re-login dulu.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-key"></i> Perbarui Kata Sandi`;
+      }
+    });
+
+    // =============================================================
+    // 7. LISTEN TO USER'S PRIVATE DATA
     // =============================================================
     function listenToUserActivities() {
       if (!userActivitiesRef) return;
@@ -425,7 +627,7 @@
     }
 
     // =============================================================
-    // 4. ADD & DELETE ACTIVITIES
+    // 8. ADD & DELETE ACTIVITIES
     // =============================================================
     document.getElementById('activityForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -483,7 +685,7 @@
     }
 
     // =============================================================
-    // 5. RENDER UI & CHARTS
+    // 9. RENDER UI & CHARTS
     // =============================================================
     function renderUI() {
       const searchVal = document.getElementById('searchFilter').value.toLowerCase();
@@ -562,10 +764,16 @@
         }
       });
 
+      const totalHours = (totalDuration / 60).toFixed(1);
+
       document.getElementById('statTodayDuration').innerText = `${todayDuration} Menit`;
       document.getElementById('statTodaySub').innerText = `${todayCount} aktivitas dicatat hari ini`;
-      document.getElementById('statTotalDuration').innerText = `${(totalDuration / 60).toFixed(1)} Jam`;
+      document.getElementById('statTotalDuration').innerText = `${totalHours} Jam`;
       document.getElementById('statTotalCount').innerText = `${data.length} total entri tersimpan`;
+
+      // Update Profile Stat Counters
+      document.getElementById('profileTotalEntries').innerText = `${data.length} Entri`;
+      document.getElementById('profileTotalHours').innerText = `${totalHours} Jam`;
 
       let topCat = '-';
       let maxC = 0;
