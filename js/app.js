@@ -399,3 +399,79 @@ function escapeHtml(str) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
   });
 }
+
+// VARIABEL INSTANS GRAFIK PROYEKSI
+function renderForecastChart(data) {
+  const forecastCanvas = document.getElementById('forecastChart');
+  if (!forecastCanvas) return;
+
+  const isDark = htmlEl.classList.contains('dark');
+  const textColor = isDark ? '#f8fafc' : '#1e293b';
+  const subTextColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+  // 1. Hitung Rata-rata Durasi Harian (14 Hari Terakhir)
+  const dailyTotals = {};
+  const now = new Date();
+  
+  data.forEach(item => {
+    const itemDate = new Date(item.dateTime);
+    const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays < 14) {
+      const dateKey = itemDate.toISOString().split('T')[0];
+      dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + Number(item.duration);
+    }
+  });
+
+  const totalDaysRecorded = Object.keys(dailyTotals).length || 1;
+  const totalMinutesRecorded = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
+  const avgDailyMinutes = Math.round(totalMinutesRecorded / totalDaysRecorded) || 30;
+
+  // 2. Buat Label 7 Hari Ke Depan
+  const next7Days = [];
+  const projectedDurations = [];
+
+  for (let i = 1; i <= 7; i++) {
+    const futureDate = new Date();
+    futureDate.setDate(now.getDate() + i);
+    next7Days.push(futureDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
+    
+    // Memberikan sedikit variasi statistik acak (±10%) agar grafik lebih alami
+    const variation = (Math.random() * 0.2 - 0.1) * avgDailyMinutes;
+    projectedDurations.push(Math.max(10, Math.round(avgDailyMinutes + variation)));
+  }
+
+  // 3. Render Chart Proyeksi
+  const ctxForecast = forecastCanvas.getContext('2d');
+  if (forecastChartInstance) forecastChartInstance.destroy();
+
+  forecastChartInstance = new Chart(ctxForecast, {
+    type: 'line',
+    data: {
+      labels: next7Days,
+      datasets: [{
+        label: 'Proyeksi Durasi (Menit)',
+        data: projectedDurations,
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.15)',
+        borderDash: [5, 5], // Garis putus-putus indikator perkiraan
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: '#8b5cf6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: `Estimasi ~${avgDailyMinutes} Menit/Hari`, color: textColor, font: { size: 12 } }
+      },
+      scales: {
+        x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
