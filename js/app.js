@@ -115,6 +115,7 @@ function renderUI() {
   renderPagination(totalItems, totalPages);
   renderMetrics(allActivities);
   renderCharts(allActivities);
+  renderForecastChart(allActivities);  
 }
 
 // Reset halaman saat filter berubah
