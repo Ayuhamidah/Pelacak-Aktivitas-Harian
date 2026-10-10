@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pelacak Aktivitas Harian (Private Cloud)</title>
+  <title>Pelacak Aktivitas Harian</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-    }
-  </script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
   
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- PapaParse CDN (Untuk Parser CSV) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
+  <!-- PDF.js CDN (Untuk Parser PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+ 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -23,275 +25,166 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- PapaParse CDN (Untuk Parser CSV) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-  <!-- PDF.js CDN (Untuk Parser PDF) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-  <!-- Firebase SDK (Compat) -->
+  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .glass-card {
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 flex flex-col justify-center items-center">
-      
-  <!-- ==================== 1. FORM AUTH (LOGIN / REGISTER) ==================== -->
-  <div id="authContainer" class="w-full max-w-md glass-card bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-8 space-y-6 shadow-xl">
+
+  <!-- 1. AUTH FORM (LOGIN / REGISTER) -->
+  <div id="authContainer" class="w-full max-w-md bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-8 space-y-6 shadow-xl">
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-          Pelacak Aktivitas
-        </h1>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">Pelacak Aktivitas</h1>
         <p class="text-slate-500 dark:text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
       </div>
-      <!-- Theme Toggle Auth -->
       <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
         <i id="themeIconAuth" class="fa-solid fa-moon"></i>
       </button>
     </div>
 
-    <!-- TAB SWITCHER -->
     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
       <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm">Masuk</button>
-      <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Daftar</button>
+      <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition">Daftar</button>
     </div>
 
     <form id="authForm" class="space-y-4">
       <div>
         <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
-        <input type="email" id="authEmail" placeholder="nama@email.com" required
-          class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+        <input type="email" id="authEmail" placeholder="nama@email.com" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white focus:outline-none focus:border-blue-500" />
       </div>
-
       <div>
         <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kata Sandi</label>
-        <input type="password" id="authPassword" placeholder="••••••••" required minlength="6"
-          class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+        <input type="password" id="authPassword" placeholder="••••••••" required minlength="6" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white focus:outline-none focus:border-blue-500" />
       </div>
-
-      <button type="submit" id="btnAuthSubmit"
-        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-blue-500/20">
-        Masuk
-      </button>
+      <button type="submit" id="btnAuthSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-blue-500/20">Masuk</button>
     </form>
   </div>
 
-  <!-- ==================== 2. MAIN APP CONTAINER ==================== -->
+  <!-- 2. MAIN APP DASHBOARD & PROFILE -->
   <div id="appContainer" class="w-full max-w-7xl space-y-6 hidden">
-    
-    <!-- HEADER & NAV TAB -->
-    <header class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm dark:shadow-none">
+    <!-- HEADER -->
+    <header class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-          Pelacak Aktivitas Harian
-        </h1>
+        <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Pelacak Aktivitas Harian</h1>
         <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Data tersimpan secara privat & tersinkronisasi Cloud</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <!-- APP VIEW SWITCHER -->
         <div class="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-          <button id="navBtnDashboard" onclick="switchNavTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2">
-            <i class="fa-solid fa-chart-line"></i> Dashboard
-          </button>
-          <button id="navBtnProfile" onclick="switchNavTab('profile')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2">
-            <i class="fa-solid fa-user"></i> Profil Saya
-          </button>
+          <button id="navBtnDashboard" onclick="switchNavTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+          <button id="navBtnProfile" onclick="switchNavTab('profile')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 transition flex items-center gap-2"><i class="fa-solid fa-user"></i> Profil Saya</button>
         </div>
 
-        <!-- Theme Toggle App -->
-        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Ubah Mode Tampilan">
-          <i id="themeIconApp" class="fa-solid fa-moon"></i>
-        </button>
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition"><i id="themeIconApp" class="fa-solid fa-moon"></i></button>
 
         <div class="text-right pl-2 border-l border-slate-200 dark:border-slate-700">
           <p id="userEmailDisplay" class="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[150px]">user@email.com</p>
-          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online
-          </span>
+          <span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online</span>
         </div>
 
-        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <i class="fa-solid fa-right-from-bracket"></i> Keluar
-        </button>
+        <button onclick="logout()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-medium transition flex items-center gap-1.5"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
       </div>
     </header>
 
-    <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+    <!-- VIEW 1: DASHBOARD -->
     <div id="dashboardView" class="space-y-6">
-      <!-- METRICS CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm dark:shadow-none">
-          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Hari Ini</p>
-          <h3 id="statTodayDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Menit</h3>
-          <p id="statTodaySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 aktivitas dicatat hari ini</p>
-        </div>
-
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-indigo-500 shadow-sm dark:shadow-none">
-          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Total Durasi Keseluruhan</p>
-          <h3 id="statTotalDuration" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">0 Jam</h3>
-          <p id="statTotalCount" class="text-xs text-slate-400 dark:text-slate-500 mt-1">0 total entri tersimpan</p>
-        </div>
-
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-purple-500 shadow-sm dark:shadow-none">
-          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Kategori Terfavorit</p>
-          <h3 id="statTopCategory" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white">-</h3>
-          <p id="statTopCategorySub" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Berdasarkan frekuensi</p>
-        </div>
-
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-emerald-500 shadow-sm dark:shadow-none">
-          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Aktivitas Terakhir</p>
-          <h3 id="statLastActivity" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white truncate">-</h3>
-          <p id="statLastTime" class="text-xs text-slate-400 dark:text-slate-500 mt-1">Belum ada data</p>
-        </div>
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm"><p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase">Total Durasi Hari Ini</p><h3 id="statTodayDuration" class="text-2xl font-bold mt-2">0 Menit</h3><p id="statTodaySub" class="text-xs text-slate-400 mt-1">0 aktivitas dicatat hari ini</p></div>
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-indigo-500 shadow-sm"><p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase">Total Durasi Keseluruhan</p><h3 id="statTotalDuration" class="text-2xl font-bold mt-2">0 Jam</h3><p id="statTotalCount" class="text-xs text-slate-400 mt-1">0 total entri tersimpan</p></div>
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-purple-500 shadow-sm"><p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase">Kategori Terfavorit</p><h3 id="statTopCategory" class="text-2xl font-bold mt-2">-</h3><p id="statTopCategorySub" class="text-xs text-slate-400 mt-1">Berdasarkan frekuensi</p></div>
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-emerald-500 shadow-sm"><p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase">Aktivitas Terakhir</p><h3 id="statLastActivity" class="text-2xl font-bold mt-2 truncate">-</h3><p id="statLastTime" class="text-xs text-slate-400 mt-1">Belum ada data</p></div>
       </div>
 
-      <!-- MAIN CONTENT GRID -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- FORM INPUT -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm dark:shadow-none">
-          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-plus-circle text-blue-500 dark:text-blue-400"></i> Tambah Aktivitas
-          </h2>
-
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm">
+          <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-plus-circle text-blue-500"></i> Tambah Aktivitas</h2>
           <form id="activityForm" class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
-              <input type="datetime-local" id="inputDateTime" required
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
-              <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-            </div>
-
+            <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label><input type="datetime-local" id="inputDateTime" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white" /></div>
+            <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label><input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white" /></div>
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
-                <select id="inputCategory" required
-                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
-                  <option value="Olahraga">🏃 Olahraga</option>
-                  <option value="Belajar">📚 Belajar</option>
-                  <option value="Pekerjaan">💼 Pekerjaan</option>
-                  <option value="Hiburan">🎮 Hiburan</option>
-                  <option value="Istirahat">😴 Istirahat</option>
-                  <option value="Lainnya">✨ Lainnya</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
-                <input type="number" id="inputDuration" min="1" placeholder="30" required
-                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-              </div>
+              <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label><select id="inputCategory" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white"><option value="Olahraga">🏃 Olahraga</option><option value="Belajar">📚 Belajar</option><option value="Pekerjaan">💼 Pekerjaan</option><option value="Hiburan">🎮 Hiburan</option><option value="Istirahat">😴 Istirahat</option><option value="Lainnya">✨ Lainnya</option></select></div>
+              <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label><input type="number" id="inputDuration" min="1" placeholder="30" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white" /></div>
             </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
-              <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
-            </div>
-
-            <button type="submit" id="btnSubmit"
-              class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
-              <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
-            </button>
+            <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label><textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..." class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white"></textarea></div>
+            <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium py-2.5 rounded-xl text-sm shadow-lg shadow-blue-500/20"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas</button>
           </form>
         </div>
 
-        <!-- CHARTS -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-4 shadow-sm dark:shadow-none">
-          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
-          </h2>
-
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-4 shadow-sm">
+          <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-chart-pie text-purple-500"></i> Analisis & Grafik</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            <div class="h-64 flex justify-center items-center">
-              <canvas id="categoryChart"></canvas>
-            </div>
-            <div class="h-64 flex justify-center items-center">
-              <canvas id="weeklyChart"></canvas>
-            </div>
+            <div class="h-64 flex justify-center items-center"><canvas id="categoryChart"></canvas></div>
+            <div class="h-64 flex justify-center items-center"><canvas id="weeklyChart"></canvas></div>
           </div>
         </div>
       </div>
 
-      <!-- TABLE & PAGINATION SECTION (TUNGGAL) -->
+      <!-- TABLE & EXPORT BUTTONS -->
       <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800 dark:text-white">
-            <i class="fa-solid fa-list-check text-emerald-500"></i> Riwayat Aktivitas Pribadi
-          </h2>
+          <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-500"></i> Riwayat Aktivitas Pribadi</h2>
 
-          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <input type="file" id="importFileInput" accept=".csv, .pdf" onchange="handleFileUpload(event)" class="hidden" />
+          <!-- INPUT FILE TERSEMBUNYI -->
+          <input type="file" id="importFileInput" accept=".csv, .pdf" onchange="handleFileUpload(event)" class="hidden" />
 
-            <button onclick="triggerFileInput()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-              <i class="fa-solid fa-file-import"></i> Upload CSV/PDF
-            </button>
+          <!-- TOMBOL DOKUMEN & EXPORT/IMPORT -->
+          <button onclick="triggerFileInput()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-file-import"></i> Upload CSV/PDF
+          </button>
 
-            <button onclick="downloadCSVTemplate()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-              <i class="fa-solid fa-download"></i> Template
-            </button>
+          <button onclick="downloadCSVTemplate()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition" title="Unduh Contoh Template CSV">
+            <i class="fa-solid fa-download"></i> Template
+          </button>
 
-            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-              <i class="fa-solid fa-file-csv"></i> Export CSV
-            </button>
+          <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+          </button>
 
-            <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+          <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
               <i class="fa-solid fa-file-pdf"></i> Export PDF
-            </button>
-
+          </button>
+          
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <!-- TOMBOL EXPORT DATA 
+            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+              -->
             <input type="text" id="searchFilter" placeholder="Cari..." class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs dark:text-white w-full sm:w-36" />
-            
             <select id="categoryFilter" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs dark:text-white">
               <option value="ALL">Semua Kategori</option>
-              <option value="Olahraga">Olahraga</option>
-              <option value="Belajar">Belajar</option>
-              <option value="Pekerjaan">Pekerjaan</option>
-              <option value="Hiburan">Hiburan</option>
-              <option value="Istirahat">Istirahat</option>
-              <option value="Lainnya">Lainnya</option>
+              <option value="Olahraga">Olahraga</option><option value="Belajar">Belajar</option><option value="Pekerjaan">Pekerjaan</option><option value="Hiburan">Hiburan</option><option value="Istirahat">Istirahat</option><option value="Lainnya">Lainnya</option>
             </select>
           </div>
         </div>
 
-        <!-- HANYA 1 TABEL PADA WADAH INI -->
         <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
           <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
             <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
-              <tr>
-                <th class="p-3">Waktu</th>
-                <th class="p-3">Aktivitas</th>
-                <th class="p-3">Kategori</th>
-                <th class="p-3">Durasi</th>
-                <th class="p-3">Catatan</th>
-                <th class="p-3 text-right">Aksi</th>
-              </tr>
+              <tr><th class="p-3">Waktu</th><th class="p-3">Aktivitas</th><th class="p-3">Kategori</th><th class="p-3">Durasi</th><th class="p-3">Catatan</th><th class="p-3 text-right">Aksi</th></tr>
             </thead>
             <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-              <tr>
-                <td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td>
-              </tr>
+              <tr><td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td></tr>
+            </tbody>
+            <!-- TABEL DATA -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+          <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
+              <tr><th class="p-3">Waktu</th><th class="p-3">Aktivitas</th><th class="p-3">Kategori</th><th class="p-3">Durasi</th><th class="p-3">Catatan</th><th class="p-3 text-right">Aksi</th></tr>
+            </thead>
+            <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+              <tr><td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
 
-        <!-- PAGINASI CONTROLS -->
+        <!-- KOMPONEN PAGINASI BARU (SISIPKAN DI SINI) -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
           <div class="text-xs text-slate-500 dark:text-slate-400">
             Menampilkan <span id="paginationInfo" class="font-semibold text-slate-800 dark:text-slate-200">0 - 0</span> dari <span id="paginationTotal" class="font-semibold text-slate-800 dark:text-slate-200">0</span> entri
@@ -305,37 +198,37 @@
               <option value="100">100 per halaman</option>
             </select>
 
-            <div id="paginationNav" class="flex items-center gap-1"></div>
+            <div id="paginationNav" class="flex items-center gap-1">
+              <!-- Tombol Angka Halaman 1, 2, 3 Dimuat Dinamis via JavaScript -->
+            </div>
           </div>
+        </div>
+          </table>
+          
         </div>
       </div>
     </div>
 
-    <!-- ==================== VIEW 2: PROFILE PAGE ==================== -->
+    <!-- VIEW 2: PROFILE PAGE -->
     <div id="profileView" class="space-y-6 hidden">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- PROFILE CARD -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-6 text-center shadow-sm">
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-6 text-center shadow-sm">
           <div class="relative inline-block">
             <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold mx-auto shadow-lg shadow-blue-500/20" id="profileAvatar">U</div>
             <span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
           </div>
-          <div>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-white" id="profileDisplayName">Pengguna</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="profileEmail">user@email.com</p>
-          </div>
+          <div><h3 class="text-xl font-bold" id="profileDisplayName">Pengguna</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="profileEmail">user@email.com</p></div>
           <div class="pt-4 border-t border-slate-200 dark:border-slate-700/60 grid grid-cols-2 gap-4 text-left">
             <div><p class="text-[10px] uppercase font-semibold text-slate-400">Status</p><p class="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">Terverifikasi</p></div>
-            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Bergabung</p><p class="text-xs font-medium mt-0.5 text-slate-700 dark:text-slate-300" id="profileCreatedDate">-</p></div>
-            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Total Entri</p><p class="text-xs font-medium mt-0.5 text-slate-700 dark:text-slate-300" id="profileTotalEntries">0 Entri</p></div>
-            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Total Jam</p><p class="text-xs font-medium mt-0.5 text-slate-700 dark:text-slate-300" id="profileTotalHours">0 Jam</p></div>
+            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Bergabung</p><p class="text-xs font-medium mt-0.5" id="profileCreatedDate">-</p></div>
+            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Total Entri</p><p class="text-xs font-medium mt-0.5" id="profileTotalEntries">0 Entri</p></div>
+            <div><p class="text-[10px] uppercase font-semibold text-slate-400">Total Jam</p><p class="text-xs font-medium mt-0.5" id="profileTotalHours">0 Jam</p></div>
           </div>
         </div>
 
-        <!-- PROFILE SETTINGS -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-6 shadow-sm">
+        <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-6 shadow-sm">
           <div class="space-y-4">
-            <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-id-card text-blue-500"></i> Informasi Profil</h2>
+            <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-id-card text-blue-500"></i> Informasi Profil</h2>
             <form id="updateProfileForm" class="space-y-4">
               <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Tampilan</label><input type="text" id="inputDisplayName" required class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white" /></div>
               <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Alamat Email</label><input type="email" id="inputProfileEmail" disabled class="w-full bg-slate-200/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed" /></div>
@@ -344,7 +237,7 @@
           </div>
           <hr class="border-slate-200 dark:border-slate-700/60" />
           <div class="space-y-4">
-            <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-lock text-purple-500"></i> Keamanan Kata Sandi</h2>
+            <h2 class="text-lg font-semibold flex items-center gap-2"><i class="fa-solid fa-lock text-purple-500"></i> Keamanan Kata Sandi</h2>
             <form id="updatePasswordForm" class="space-y-4">
               <div><label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kata Sandi Baru</label><input type="password" id="inputNewPassword" placeholder="Minimum 6 karakter" required minlength="6" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm dark:text-white" /></div>
               <button type="submit" id="btnUpdatePassword" class="bg-purple-600 hover:bg-purple-500 text-white font-medium px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-md"><i class="fa-solid fa-key"></i> Perbarui Kata Sandi</button>
@@ -358,10 +251,10 @@
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-    <span id="toastMessage" class="text-xs font-medium">Pesan notifikasi</span>
+    <span id="toastMessage" class="text-xs font-medium">Notifikasi</span>
   </div>
 
-  <!-- ==================== PEMANGGILAN SCRIPT MODULAR ==================== -->
+  <!-- MODULAR JAVASCRIPT SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/export.js"></script>
