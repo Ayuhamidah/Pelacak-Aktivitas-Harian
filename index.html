@@ -37,17 +37,6 @@
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 flex flex-col justify-center items-center">
-    <!--=============================================================
-          1. DEKLARASI VARIABEL UTAMA (WAJIB DI PALING ATAS)
-        ============================================================= --> 
-    <script>
-    let allActivities = [];
-    let currentUser = null;
-    let userActivitiesRef = null;
-    let isLoginMode = true;
-    let categoryChartInstance = null;
-    let weeklyChartInstance = null;
-    </script> <!-- Tambahkan penutup </script> di sini -->
       
   <!-- ==================== 1. FORM AUTH (LOGIN / REGISTER) ==================== -->
   <div id="authContainer" class="w-full max-w-md glass-card bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-8 space-y-6 shadow-xl">
@@ -276,8 +265,18 @@
 
   <!-- JAVASCRIPT & FIREBASE INTEGRATION -->
   <script>
+       //=============================================================
+       // 1. DEKLARASI VARIABEL UTAMA (WAJIB DI PALING ATAS)
+       //=============================================================
+    let allActivities = [];
+    let currentUser = null;
+    let userActivitiesRef = null;
+    let isLoginMode = true;
+    let categoryChartInstance = null;
+    let weeklyChartInstance = null;
+  
     // =============================================================
-    // 0. THEME TOGGLE LOGIC (DARK / LIGHT MODE)
+    // 2. THEME TOGGLE LOGIC (DARK / LIGHT MODE)
     // =============================================================
     const htmlEl = document.documentElement;
     const currentTheme = localStorage.getItem('appTheme') || 'dark';
