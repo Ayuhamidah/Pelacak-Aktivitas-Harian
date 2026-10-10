@@ -210,53 +210,73 @@
 
     </div>
 
-    <!-- TABLE & FILTER SECTION -->
-    <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-emerald-500 dark:text-emerald-400"></i> Riwayat Aktivitas Pribadi
-        </h2>
+  <!-- TABLE & PAGINATION SECTION -->
+<div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <h2 class="text-lg font-semibold flex items-center gap-2">
+      <i class="fa-solid fa-list-check text-emerald-500"></i> Riwayat Aktivitas Pribadi
+    </h2>
 
-        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <input type="text" id="searchFilter" placeholder="Cari aktivitas..."
-            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition w-full sm:w-48" />
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+      <!-- INPUT FILE TERSEMBUNYI -->
+      <input type="file" id="importFileInput" accept=".csv, .pdf" onchange="handleFileUpload(event)" class="hidden" />
 
-          <select id="categoryFilter"
-            class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
-            <option value="ALL">Semua Kategori</option>
-            <option value="Olahraga">Olahraga</option>
-            <option value="Belajar">Belajar</option>
-            <option value="Pekerjaan">Pekerjaan</option>
-            <option value="Hiburan">Hiburan</option>
-            <option value="Istirahat">Istirahat</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
-        </div>
-      </div>
+      <button onclick="triggerFileInput()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+        <i class="fa-solid fa-file-import"></i> Upload CSV/PDF
+      </button>
 
-      <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-        <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-          <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
-            <tr>
-              <th class="p-3">Waktu</th>
-              <th class="p-3">Aktivitas</th>
-              <th class="p-3">Kategori</th>
-              <th class="p-3">Durasi</th>
-              <th class="p-3">Catatan</th>
-              <th class="p-3 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
-            <tr>
-              <td colspan="6" class="text-center p-6 text-slate-400">Memuat data pribadi Anda...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <button onclick="downloadCSVTemplate()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+        <i class="fa-solid fa-download"></i> Template
+      </button>
+
+      <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </button>
+
+      <button onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+      </button>
+
+      <input type="text" id="searchFilter" placeholder="Cari..." class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs dark:text-white w-full sm:w-36" />
+      <select id="categoryFilter" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs dark:text-white">
+        <option value="ALL">Semua Kategori</option>
+        <option value="Olahraga">Olahraga</option><option value="Belajar">Belajar</option><option value="Pekerjaan">Pekerjaan</option><option value="Hiburan">Hiburan</option><option value="Istirahat">Istirahat</option><option value="Lainnya">Lainnya</option>
+      </select>
     </div>
-
   </div>
 
+  <!-- SATU TABEL SAJA -->
+  <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+    <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+      <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
+        <tr><th class="p-3">Waktu</th><th class="p-3">Aktivitas</th><th class="p-3">Kategori</th><th class="p-3">Durasi</th><th class="p-3">Catatan</th><th class="p-3 text-right">Aksi</th></tr>
+      </thead>
+      <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+        <tr><td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- KOMPONEN PAGINASI -->
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+    <div class="text-xs text-slate-500 dark:text-slate-400">
+      Menampilkan <span id="paginationInfo" class="font-semibold text-slate-800 dark:text-slate-200">0 - 0</span> dari <span id="paginationTotal" class="font-semibold text-slate-800 dark:text-slate-200">0</span> entri
+    </div>
+
+    <div class="flex items-center gap-3">
+      <select id="itemsPerPageSelect" onchange="changeItemsPerPage(this.value)" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none">
+        <option value="10">10 per halaman</option>
+        <option value="25">25 per halaman</option>
+        <option value="50">50 per halaman</option>
+        <option value="100">100 per halaman</option>
+      </select>
+
+      <div id="paginationNav" class="flex items-center gap-1"></div>
+    </div>
+  </div>
+</div>
+
+    
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
