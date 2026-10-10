@@ -428,6 +428,19 @@ function renderForecastChart(data) {
   const totalMinutesRecorded = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
   const avgDailyMinutes = Math.round(totalMinutesRecorded / totalDaysRecorded) || 30;
 
+  // Formatting Waktu agar Ramah Pengguna (Konversi ke Jam jika > 60 Menit)
+  const avgHours = (avgDailyMinutes / 60).toFixed(1);
+  const readableAvg = avgDailyMinutes >= 60 ? `${avgHours} Jam` : `${avgDailyMinutes} Menit`;
+
+  // Update Teks Penjelasan Dinamis
+  const explanationEl = document.getElementById('forecastExplanationText');
+  if (explanationEl) {
+    explanationEl.innerHTML = `
+      Garis putus-putus (<span class="text-indigo-500 font-semibold">---</span>) menunjukkan perkiraan alokasi waktu aktivitas kamu untuk seminggu ke depan. 
+      Berdasarkan pola 14 hari terakhir, kamu diperkirakan menghabiskan rata-rata <strong class="text-slate-800 dark:text-white">${readableAvg}/hari</strong>.
+    `;
+  }
+
   // 2. Buat Label 7 Hari Ke Depan
   const next7Days = [];
   const projectedDurations = [];
@@ -437,7 +450,6 @@ function renderForecastChart(data) {
     futureDate.setDate(now.getDate() + i);
     next7Days.push(futureDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
     
-    // Memberikan sedikit variasi statistik acak (±10%) agar grafik lebih alami
     const variation = (Math.random() * 0.2 - 0.1) * avgDailyMinutes;
     projectedDurations.push(Math.max(10, Math.round(avgDailyMinutes + variation)));
   }
@@ -451,7 +463,7 @@ function renderForecastChart(data) {
     data: {
       labels: next7Days,
       datasets: [{
-        label: 'Proyeksi Durasi (Menit)',
+        label: 'Estimasi Durasi',
         data: projectedDurations,
         borderColor: '#8b5cf6',
         backgroundColor: 'rgba(139, 92, 246, 0.15)',
@@ -467,11 +479,36 @@ function renderForecastChart(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { display: true, text: `Estimasi ~${avgDailyMinutes} Menit/Hari`, color: textColor, font: { size: 12 } }
+        title: { 
+          display: true, 
+          text: `Estimasi Rata-Rata: ~${readableAvg}/Hari`, 
+          color: textColor, 
+          font: { size: 12 } 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              const hrs = (val / 60).toFixed(1);
+              return val >= 60 
+                ? ` Estimasi: ${hrs} Jam (${val} Menit)` 
+                : ` Estimasi: ${val} Menit`;
+            }
+          }
+        }
       },
       scales: {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
-        y: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { color: gridColor } }
+        y: { 
+          ticks: { 
+            color: subTextColor, 
+            font: { size: 10 },
+            callback: function(value) {
+              return value >= 60 ? (value / 60).toFixed(0) + ' Jam' : value + ' Mins';
+            }
+          }, 
+          grid: { color: gridColor } 
+        }
       }
     }
   });
