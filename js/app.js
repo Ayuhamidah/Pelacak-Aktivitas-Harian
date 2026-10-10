@@ -411,8 +411,10 @@ function renderForecastChart(data) {
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
   const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-  // Hitung Rata-rata Khusus Kategori "Olahraga" atau "Belajar"
+  // 1. Tentukan Kategori Target & Batas Maksimal Realistis (5 Jam / 300 Menit)
   const TARGET_CATEGORY = 'Olahraga'; 
+  const MAX_CATEGORY_MINUTES = 300; // Maksimal 5 Jam per hari per kategori
+
   const dailyTotals = {};
   const now = new Date();
   
@@ -429,15 +431,27 @@ function renderForecastChart(data) {
 
   const totalDays = Object.keys(dailyTotals).length || 1;
   const totalMins = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
-  const avgMins = Math.round(totalMins / totalDays) || 45; // Default 45 menit jika data kosong
+  
+  // Hitung rata-rata & terapkan batas maksimal 300 menit (5 Jam)
+  let avgMins = Math.round(totalMins / totalDays) || 45;
+  if (avgMins > MAX_CATEGORY_MINUTES) {
+    avgMins = MAX_CATEGORY_MINUTES;
+  }
 
+  // Formatting teks ramah pengguna
+  const avgHours = (avgMins / 60).toFixed(1);
+  const readableAvg = avgMins >= 60 ? `${avgHours} Jam` : `${avgMins} Menit`;
+
+  // Update teks penjelasan di atas grafik
   const explanationEl = document.getElementById('forecastExplanationText');
   if (explanationEl) {
     explanationEl.innerHTML = `
-      Estimasi target waktu <strong>${TARGET_CATEGORY}</strong> harianmu untuk 7 hari ke depan berdasarkan kebiasaan 14 hari terakhir (~<strong>${avgMins} Menit/hari</strong>).
+      Garis putus-putus (<span class="text-blue-500 font-semibold">---</span>) menunjukkan estimasi target waktu <strong>${TARGET_CATEGORY}</strong> untuk 7 hari ke depan. 
+      Berdasarkan tren 14 hari terakhir, perkiraan alokasi waktu sekitar <strong class="text-slate-800 dark:text-white">${readableAvg}/hari</strong> (dibatasi maksimum 5 jam/hari).
     `;
   }
 
+  // 2. Buat Data Proyeksi 7 Hari Ke Depan
   const next7Days = [];
   const projectedValues = [];
 
@@ -446,11 +460,13 @@ function renderForecastChart(data) {
     futureDate.setDate(now.getDate() + i);
     next7Days.push(futureDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
     
-    // Variasi acak ±15% yang realistis
-    const variation = (Math.random() * 0.3 - 0.15) * avgMins;
-    projectedValues.push(Math.max(15, Math.round(avgMins + variation)));
+    // Variasi acak ±10% yang terkunci aman di bawah 300 menit (5 Jam)
+    const variation = (Math.random() * 0.2 - 0.1) * avgMins;
+    const finalVal = Math.min(MAX_CATEGORY_MINUTES, Math.max(15, Math.round(avgMins + variation)));
+    projectedValues.push(finalVal);
   }
 
+  // 3. Render Grafik Chart.js
   const ctxForecast = forecastCanvas.getContext('2d');
   if (forecastChartInstance) forecastChartInstance.destroy();
 
@@ -459,14 +475,14 @@ function renderForecastChart(data) {
     data: {
       labels: next7Days,
       datasets: [{
-        label: `Proyeksi ${TARGET_CATEGORY} (Menit)`,
+        label: `Proyeksi ${TARGET_CATEGORY}`,
         data: projectedValues,
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.12)',
         borderDash: [5, 5],
         fill: true,
         tension: 0.4,
-        pointRadius: 4,
+        pointRadius: 5,
         pointBackgroundColor: '#3b82f6'
       }]
     },
@@ -475,13 +491,36 @@ function renderForecastChart(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { display: true, text: `Target Rata-Rata ${TARGET_CATEGORY}: ~${avgMins} Mins/Hari`, color: textColor, font: { size: 12 } }
+        title: { 
+          display: true, 
+          text: `Target Rata-Rata ${TARGET_CATEGORY}: ~${readableAvg}/Hari`, 
+          color: textColor, 
+          font: { size: 12 } 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              const hrs = (val / 60).toFixed(1);
+              return val >= 60 
+                ? ` Estimasi Target: ${hrs} Jam (${val} Menit)` 
+                : ` Estimasi Target: ${val} Menit`;
+            }
+          }
+        }
       },
       scales: {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
         y: { 
           beginAtZero: true,
-          ticks: { color: subTextColor, font: { size: 10 }, callback: v => v + ' Mins' }, 
+          max: 300, // Sumbu Y dibatasi tepat pada 300 Menit (5 Jam)
+          ticks: { 
+            color: subTextColor, 
+            font: { size: 10 },
+            callback: function(value) {
+              return value >= 60 ? (value / 60).toFixed(0) + ' Jam' : value + ' Mins';
+            }
+          }, 
           grid: { color: gridColor } 
         }
       }
