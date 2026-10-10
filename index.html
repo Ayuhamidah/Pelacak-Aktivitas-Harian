@@ -172,7 +172,39 @@
             <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
               <tr><td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td></tr>
             </tbody>
+            <!-- TABEL DATA -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+          <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-100 dark:bg-slate-800/60 text-xs uppercase text-slate-500 dark:text-slate-400">
+              <tr><th class="p-3">Waktu</th><th class="p-3">Aktivitas</th><th class="p-3">Kategori</th><th class="p-3">Durasi</th><th class="p-3">Catatan</th><th class="p-3 text-right">Aksi</th></tr>
+            </thead>
+            <tbody id="activityTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+              <tr><td colspan="6" class="text-center p-6 text-slate-400">Memuat data...</td></tr>
+            </tbody>
           </table>
+        </div>
+
+        <!-- KOMPONEN PAGINASI BARU (SISIPKAN DI SINI) -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+          <div class="text-xs text-slate-500 dark:text-slate-400">
+            Menampilkan <span id="paginationInfo" class="font-semibold text-slate-800 dark:text-slate-200">0 - 0</span> dari <span id="paginationTotal" class="font-semibold text-slate-800 dark:text-slate-200">0</span> entri
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select id="itemsPerPageSelect" onchange="changeItemsPerPage(this.value)" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none">
+              <option value="10">10 per halaman</option>
+              <option value="25">25 per halaman</option>
+              <option value="50">50 per halaman</option>
+              <option value="100">100 per halaman</option>
+            </select>
+
+            <div id="paginationNav" class="flex items-center gap-1">
+              <!-- Tombol Angka Halaman 1, 2, 3 Dimuat Dinamis via JavaScript -->
+            </div>
+          </div>
+        </div>
+          </table>
+          
         </div>
       </div>
     </div>
