@@ -119,55 +119,45 @@ function extractActivitiesFromPDFText(lines) {
 
 // 3. SIMPAN KUMPULAN DATA KE FIREBASE
 async function processAndSaveEntries(rawItems) {
-  if (!userActivitiesRef) {
-    showToast("Silakan login terlebih dahulu.", "error");
-    return;
-  }
+  if (!userActivitiesRef) return;
 
-  let successCount = 0;
+  showToast("Menyiapkan data...", "info");
+
+  const updates = {};
   const validCategories = ['Olahraga', 'Belajar', 'Pekerjaan', 'Hiburan', 'Istirahat', 'Lainnya'];
 
-  showToast(`Mengunggah ${rawItems.length} data ke Cloud...`, "info");
+  // Kumpulkan semua data ke dalam satu objek
+  rawItems.forEach(item => {
+    const title = item['Nama Aktivitas'] || item['Aktivitas'] || item['title'];
+    if (!title) return;
 
-  for (const item of rawItems) {
-    // Pemetaan nama kolom fleksibel (CSV/PDF)
-    const title = item['Nama Aktivitas'] || item['Aktivitas'] || item['title'] || item['Title'];
     let category = item['Kategori'] || item['category'] || 'Lainnya';
-    const duration = parseInt(item['Durasi (Menit)'] || item['Durasi'] || item['duration'] || 30);
-    let dateTime = item['Waktu & Tanggal'] || item['Waktu'] || item['dateTime'] || new Date().toISOString().slice(0, 16);
-    const notes = item['Catatan'] || item['notes'] || '';
-
-    if (!title) continue; // Lewati jika tidak ada nama aktivitas
-
-    // Normalisasi Nama Kategori
     category = validCategories.find(c => c.toLowerCase() === category.toLowerCase()) || 'Lainnya';
 
-    // Format Ulang Waktu ke datetime-local jika perlu
-    if (dateTime.includes(' ')) {
-      dateTime = dateTime.replace(' ', 'T');
-    }
+    const duration = parseInt(item['Durasi (Menit)'] || item['duration'] || 30);
+    let dateTime = item['Waktu & Tanggal'] || item['dateTime'] || new Date().toISOString().slice(0, 16);
+    if (dateTime.includes(' ')) dateTime = dateTime.replace(' ', 'T');
 
-    const newActivity = {
+    // Buat ID unik Firebase tanpa mengirim request dulu
+    const newKey = userActivitiesRef.push().key;
+    updates[newKey] = {
       title,
       category,
       duration: isNaN(duration) ? 30 : duration,
       dateTime,
-      notes,
+      notes: item['Catatan'] || item['notes'] || '',
       createdAt: new Date().toISOString()
     };
+  });
 
-    try {
-      await userActivitiesRef.push(newActivity);
-      successCount++;
-    } catch (err) {
-      console.error("Batch insert item error:", err);
-    }
-  }
-
-  if (successCount > 0) {
-    showToast(`Berhasil mengimpor ${successCount} aktivitas!`, "success");
-  } else {
-    showToast("Tidak ada data valid yang tersimpan.", "error");
+  try {
+    showToast("Mengunggah data sekaligus ke Cloud...", "info");
+    // Kirim ribuan data dalam 1 kali request jaringan!
+    await userActivitiesRef.update(updates);
+    showToast("Berhasil mengimpor semua data!", "success");
+  } catch (err) {
+    console.error("Batch update error:", err);
+    showToast("Gagal mengunggah data (ukuran file terlalu besar untuk 1 request)", "error");
   }
 }
 
