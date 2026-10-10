@@ -1,7 +1,12 @@
+// =============================================================
+// MODUL DASHBOARD, GRAFIK & PAGINASI (app.js)
+// =============================================================
+
 // Default Datetime Local Input
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
+const inputDateEl = document.getElementById('inputDateTime');
+if (inputDateEl) inputDateEl.value = now.toISOString().slice(0, 16);
 
 // Realtime Firebase Listener
 function listenToUserActivities() {
@@ -26,41 +31,44 @@ function listenToUserActivities() {
 }
 
 // Add New Activity
-document.getElementById('activityForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!userActivitiesRef) return;
+const activityFormEl = document.getElementById('activityForm');
+if (activityFormEl) {
+  activityFormEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!userActivitiesRef) return;
 
-  const title = document.getElementById('inputTitle').value.trim();
-  const category = document.getElementById('inputCategory').value;
-  const duration = parseInt(document.getElementById('inputDuration').value);
-  const dateTime = document.getElementById('inputDateTime').value;
-  const notes = document.getElementById('inputNotes').value.trim();
+    const title = document.getElementById('inputTitle').value.trim();
+    const category = document.getElementById('inputCategory').value;
+    const duration = parseInt(document.getElementById('inputDuration').value);
+    const dateTime = document.getElementById('inputDateTime').value;
+    const notes = document.getElementById('inputNotes').value.trim();
 
-  const newActivity = {
-    title, category, duration, dateTime, notes,
-    createdAt: new Date().toISOString()
-  };
+    const newActivity = {
+      title, category, duration, dateTime, notes,
+      createdAt: new Date().toISOString()
+    };
 
-  try {
-    const btn = document.getElementById('btnSubmit');
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+    try {
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
 
-    await userActivitiesRef.push(newActivity);
-    showToast("Aktivitas tersimpan!", "success");
-    document.getElementById('activityForm').reset();
-    
-    const resetNow = new Date();
-    resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
-    document.getElementById('inputDateTime').value = resetNow.toISOString().slice(0, 16);
-  } catch (err) {
-    showToast("Gagal menyimpan data", "error");
-  } finally {
-    const btn = document.getElementById('btnSubmit');
-    btn.disabled = false;
-    btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas`;
-  }
-});
+      await userActivitiesRef.push(newActivity);
+      showToast("Aktivitas tersimpan!", "success");
+      document.getElementById('activityForm').reset();
+      
+      const resetNow = new Date();
+      resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
+      document.getElementById('inputDateTime').value = resetNow.toISOString().slice(0, 16);
+    } catch (err) {
+      showToast("Gagal menyimpan data", "error");
+    } finally {
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas`;
+    }
+  });
+}
 
 // Delete Activity
 async function deleteActivity(id) {
@@ -73,10 +81,15 @@ async function deleteActivity(id) {
   }
 }
 
-// Render UI Components
+// =============================================================
+// LOGIKA RENDER UI & PAGINASI
+// =============================================================
 function renderUI() {
-  const searchVal = document.getElementById('searchFilter').value.toLowerCase();
-  const catVal = document.getElementById('categoryFilter').value;
+  const searchInput = document.getElementById('searchFilter');
+  const categorySelect = document.getElementById('categoryFilter');
+
+  const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+  const catVal = categorySelect ? categorySelect.value : 'ALL';
 
   const filtered = allActivities.filter(item => {
     const matchSearch = item.title.toLowerCase().includes(searchVal) || (item.notes && item.notes.toLowerCase().includes(searchVal));
@@ -84,16 +97,121 @@ function renderUI() {
     return matchSearch && matchCat;
   });
 
-  renderTable(filtered);
+  // Hitung total halaman
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  // Slicing data sesuai halaman aktif
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const pageData = filtered.slice(startIndex, endIndex);
+
+  renderTable(pageData);
+  renderPagination(totalItems, totalPages);
   renderMetrics(allActivities);
   renderCharts(allActivities);
 }
 
-document.getElementById('searchFilter').addEventListener('input', renderUI);
-document.getElementById('categoryFilter').addEventListener('change', renderUI);
+// Reset halaman saat filter berubah
+const searchFilterEl = document.getElementById('searchFilter');
+if (searchFilterEl) {
+  searchFilterEl.addEventListener('input', () => { currentPage = 1; renderUI(); });
+}
 
+const categoryFilterEl = document.getElementById('categoryFilter');
+if (categoryFilterEl) {
+  categoryFilterEl.addEventListener('change', () => { currentPage = 1; renderUI(); });
+}
+
+function changeItemsPerPage(val) {
+  itemsPerPage = parseInt(val);
+  currentPage = 1;
+  renderUI();
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderUI();
+}
+
+function renderPagination(totalItems, totalPages) {
+  const infoEl = document.getElementById('paginationInfo');
+  const totalEl = document.getElementById('paginationTotal');
+  const navEl = document.getElementById('paginationNav');
+
+  if (!infoEl || !navEl) return;
+
+  const start = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const end = Math.min(currentPage * itemsPerPage, totalItems);
+
+  infoEl.innerText = `${start} - ${end}`;
+  if (totalEl) totalEl.innerText = totalItems;
+
+  navEl.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  // Tombol Previous
+  const prevBtn = document.createElement('button');
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => goToPage(currentPage - 1);
+  prevBtn.className = `px-2.5 py-1 rounded-lg text-xs font-semibold transition ${currentPage === 1 ? 'opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400' : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200'}`;
+  prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
+  navEl.appendChild(prevBtn);
+
+  let startPage = Math.max(1, currentPage - 1);
+  let endPage = Math.min(totalPages, currentPage + 1);
+
+  if (currentPage === 1) endPage = Math.min(3, totalPages);
+  if (currentPage === totalPages) startPage = Math.max(1, totalPages - 2);
+
+  if (startPage > 1) {
+    navEl.appendChild(createPageBtn(1));
+    if (startPage > 2) navEl.appendChild(createEllipsis());
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    navEl.appendChild(createPageBtn(i));
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) navEl.appendChild(createEllipsis());
+    navEl.appendChild(createPageBtn(totalPages));
+  }
+
+  // Tombol Next
+  const nextBtn = document.createElement('button');
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.onclick = () => goToPage(currentPage + 1);
+  nextBtn.className = `px-2.5 py-1 rounded-lg text-xs font-semibold transition ${currentPage === totalPages ? 'opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400' : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200'}`;
+  nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
+  navEl.appendChild(nextBtn);
+}
+
+function createPageBtn(pageNum) {
+  const btn = document.createElement('button');
+  btn.onclick = () => goToPage(pageNum);
+  const isActive = pageNum === currentPage;
+  btn.className = `px-3 py-1 rounded-lg text-xs font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'}`;
+  btn.innerText = pageNum;
+  return btn;
+}
+
+function createEllipsis() {
+  const span = document.createElement('span');
+  span.className = 'px-1 text-xs text-slate-400';
+  span.innerText = '...';
+  return span;
+}
+
+// =============================================================
+// RENDER TABEL, METRIK & GRAFIK
+// =============================================================
 function renderTable(data) {
   const tbody = document.getElementById('activityTableBody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   if (data.length === 0) {
@@ -144,27 +262,37 @@ function renderMetrics(data) {
   });
 
   const totalHours = (totalDuration / 60).toFixed(1);
-  document.getElementById('statTodayDuration').innerText = `${todayDuration} Menit`;
-  document.getElementById('statTodaySub').innerText = `${todayCount} aktivitas dicatat hari ini`;
-  document.getElementById('statTotalDuration').innerText = `${totalHours} Jam`;
-  document.getElementById('statTotalCount').innerText = `${data.length} total entri tersimpan`;
+  const statTodayDur = document.getElementById('statTodayDuration');
+  const statTodaySub = document.getElementById('statTodaySub');
+  const statTotalDur = document.getElementById('statTotalDuration');
+  const statTotalCnt = document.getElementById('statTotalCount');
 
-  document.getElementById('profileTotalEntries').innerText = `${data.length} Entri`;
-  document.getElementById('profileTotalHours').innerText = `${totalHours} Jam`;
+  if (statTodayDur) statTodayDur.innerText = `${todayDuration} Menit`;
+  if (statTodaySub) statTodaySub.innerText = `${todayCount} aktivitas dicatat hari ini`;
+  if (statTotalDur) statTotalDur.innerText = `${totalHours} Jam`;
+  if (statTotalCnt) statTotalCnt.innerText = `${data.length} total entri tersimpan`;
+
+  const profEntries = document.getElementById('profileTotalEntries');
+  const profHours = document.getElementById('profileTotalHours');
+  if (profEntries) profEntries.innerText = `${data.length} Entri`;
+  if (profHours) profHours.innerText = `${totalHours} Jam`;
 
   let topCat = '-';
   let maxC = 0;
   Object.keys(catCount).forEach(cat => {
     if (catCount[cat] > maxC) { maxC = catCount[cat]; topCat = cat; }
   });
-  document.getElementById('statTopCategory').innerText = topCat;
+  const statTopCat = document.getElementById('statTopCategory');
+  if (statTopCat) statTopCat.innerText = topCat;
 
+  const statLastAct = document.getElementById('statLastActivity');
+  const statLastTm = document.getElementById('statLastTime');
   if (data.length > 0) {
-    document.getElementById('statLastActivity').innerText = data[0].title;
-    document.getElementById('statLastTime').innerText = new Date(data[0].dateTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    if (statLastAct) statLastAct.innerText = data[0].title;
+    if (statLastTm) statLastTm.innerText = new Date(data[0].dateTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   } else {
-    document.getElementById('statLastActivity').innerText = '-';
-    document.getElementById('statLastTime').innerText = 'Belum ada data';
+    if (statLastAct) statLastAct.innerText = '-';
+    if (statLastTm) statLastTm.innerText = 'Belum ada data';
   }
 }
 
@@ -183,26 +311,29 @@ function renderCharts(data) {
     }
   });
 
-  const ctxCat = document.getElementById('categoryChart').getContext('2d');
-  if (categoryChartInstance) categoryChartInstance.destroy();
-  categoryChartInstance = new Chart(ctxCat, {
-    type: 'doughnut',
-    data: {
-      labels: Object.keys(catTotals),
-      datasets: [{
-        data: Object.values(catTotals),
-        backgroundColor: ['#3b82f6', '#6366f1', '#f59e0b', '#a855f7', '#10b981', '#64748b'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: subTextColor, font: { size: 10 } } },
-        title: { display: true, text: 'Distribusi Durasi (Menit)', color: textColor, font: { size: 12 } }
+  const catCanvas = document.getElementById('categoryChart');
+  if (catCanvas) {
+    const ctxCat = catCanvas.getContext('2d');
+    if (categoryChartInstance) categoryChartInstance.destroy();
+    categoryChartInstance = new Chart(ctxCat, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(catTotals),
+        datasets: [{
+          data: Object.values(catTotals),
+          backgroundColor: ['#3b82f6', '#6366f1', '#f59e0b', '#a855f7', '#10b981', '#64748b'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: subTextColor, font: { size: 10 } } },
+          title: { display: true, text: 'Distribusi Durasi (Menit)', color: textColor, font: { size: 12 } }
+        }
       }
-    }
-  });
+    });
+  }
 
   const last7Days = [];
   const dayDurations = Array(7).fill(0);
@@ -221,32 +352,37 @@ function renderCharts(data) {
     }
   });
 
-  const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
-  if (weeklyChartInstance) weeklyChartInstance.destroy();
-  weeklyChartInstance = new Chart(ctxWeekly, {
-    type: 'bar',
-    data: {
-      labels: last7Days,
-      datasets: [{ label: 'Durasi (Menit)', data: dayDurations, backgroundColor: '#6366f1', borderRadius: 6 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Aktivitas 7 Hari Terakhir', color: textColor, font: { size: 12 } }
+  const weeklyCanvas = document.getElementById('weeklyChart');
+  if (weeklyCanvas) {
+    const ctxWeekly = weeklyCanvas.getContext('2d');
+    if (weeklyChartInstance) weeklyChartInstance.destroy();
+    weeklyChartInstance = new Chart(ctxWeekly, {
+      type: 'bar',
+      data: {
+        labels: last7Days,
+        datasets: [{ label: 'Durasi (Menit)', data: dayDurations, backgroundColor: '#6366f1', borderRadius: 6 }]
       },
-      scales: {
-        x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
-        y: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { color: gridColor } }
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Aktivitas 7 Hari Terakhir', color: textColor, font: { size: 12 } }
+        },
+        scales: {
+          x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { color: gridColor } }
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
   const toastMsg = document.getElementById('toastMessage');
   const toastIcon = document.getElementById('toastIcon');
+
+  if (!toast || !toastMsg || !toastIcon) return;
 
   toastMsg.innerText = msg;
   toastIcon.className = type === 'success' ? 'fa-solid fa-circle-check text-emerald-400 text-lg' : 'fa-solid fa-circle-xmark text-red-400 text-lg';
@@ -256,7 +392,8 @@ function showToast(msg, type = 'success') {
 }
 
 function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, function(m) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, function(m) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
   });
 }
