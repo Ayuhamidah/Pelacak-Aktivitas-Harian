@@ -8,7 +8,7 @@ let weeklyChartInstance = null;
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSy...", // Ganti dengan API Key asli milikmu
+  apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c", // Ganti dengan API Key asli milikmu
   authDomain: "crudfb3.firebaseapp.com",
   databaseURL: "https://crudfb3.firebaseio.com",
   projectId: "crudfb3",
