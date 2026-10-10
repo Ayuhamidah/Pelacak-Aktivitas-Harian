@@ -219,6 +219,19 @@
             <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
           </h2>
 
+          <!-- KARTU GRAFIK PROYEKSI (FORECAST) -->
+        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Proyeksi Aktivitas 7 Hari Ke Depan
+          </h2>
+          <span class="text-xs bg-indigo-500/10 text-indigo-500 px-2.5 py-1 rounded-full font-medium">AI Forecast</span>
+          </div>
+          <div class="h-64">
+          <canvas id="forecastChart"></canvas>
+        </div>
+        </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div class="h-64 flex justify-center items-center">
               <canvas id="categoryChart"></canvas>
