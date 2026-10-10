@@ -219,29 +219,30 @@
             <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
           </h2>
 
-          <!-- KARTU GRAFIK PROYEKSI (FORECAST) -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
-          <div class="flex justify-between items-center">
-          <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Proyeksi Aktivitas 7 Hari Ke Depan
-          </h2>
-          <span class="text-xs bg-indigo-500/10 text-indigo-500 px-2.5 py-1 rounded-full font-medium">AI Forecast</span>
-          </div>
-          <div class="h-64">
-          <canvas id="forecastChart"></canvas>
-        </div>
-        </div>
+         <!-- KARTU GRAFIK PROYEKSI (FORECAST) -->
+<div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
+  <div class="flex justify-between items-center">
+    <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+      <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Proyeksi Aktivitas 7 Hari Ke Depan
+    </h2>
+    <span class="text-xs bg-indigo-500/10 text-indigo-500 px-2.5 py-1 rounded-full font-medium">AI Forecast</span>
+  </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            <div class="h-64 flex justify-center items-center">
-              <canvas id="categoryChart"></canvas>
-            </div>
-            <div class="h-64 flex justify-center items-center">
-              <canvas id="weeklyChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- KOTAK PENJELASAN UNTUK PENGGUNA AWAM -->
+  <div class="p-3.5 bg-indigo-50/60 dark:bg-slate-900/50 rounded-xl border border-indigo-100 dark:border-slate-700/60 flex items-start gap-3 text-xs">
+    <i class="fa-solid fa-circle-info text-indigo-500 text-base mt-0.5"></i>
+    <div class="space-y-1 text-slate-600 dark:text-slate-300">
+      <p class="font-semibold text-slate-800 dark:text-white">Cara Membaca Grafik Ini:</p>
+      <p id="forecastExplanationText" class="leading-relaxed text-slate-500 dark:text-slate-400">
+        Menghitung estimasi berdasarkan pola aktivitasmu...
+      </p>
+    </div>
+  </div>
+
+  <div class="h-64">
+    <canvas id="forecastChart"></canvas>
+  </div>
+</div>
 
       <!-- TABLE & PAGINATION SECTION (TUNGGAL) -->
       <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
