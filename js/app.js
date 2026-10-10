@@ -425,10 +425,17 @@ function renderForecastChart(data) {
   });
 
   const totalDaysRecorded = Object.keys(dailyTotals).length || 1;
-  const totalMinutesRecorded = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
-  const avgDailyMinutes = Math.round(totalMinutesRecorded / totalDaysRecorded) || 30;
+  const rawTotalMinutes = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
+  
+  let avgDailyMinutes = Math.round(rawTotalMinutes / totalDaysRecorded) || 30;
 
-  // Formatting Waktu agar Ramah Pengguna (Konversi ke Jam jika > 60 Menit)
+  // FITUR KEAMANAN WAKTU BUMI: Batasi maksimal 24 Jam (1440 Menit) per hari
+  const MAX_MINUTES_PER_DAY = 1440;
+  if (avgDailyMinutes > MAX_MINUTES_PER_DAY) {
+    avgDailyMinutes = MAX_MINUTES_PER_DAY;
+  }
+
+  // Formatting Waktu Ramah Pengguna
   const avgHours = (avgDailyMinutes / 60).toFixed(1);
   const readableAvg = avgDailyMinutes >= 60 ? `${avgHours} Jam` : `${avgDailyMinutes} Menit`;
 
@@ -437,7 +444,7 @@ function renderForecastChart(data) {
   if (explanationEl) {
     explanationEl.innerHTML = `
       Garis putus-putus (<span class="text-indigo-500 font-semibold">---</span>) menunjukkan perkiraan alokasi waktu aktivitas kamu untuk seminggu ke depan. 
-      Berdasarkan pola 14 hari terakhir, kamu diperkirakan menghabiskan rata-rata <strong class="text-slate-800 dark:text-white">${readableAvg}/hari</strong>.
+      Berdasarkan pola 14 hari terakhir, kamu diperkirakan menggunakan alokasi waktu hingga <strong class="text-slate-800 dark:text-white">${readableAvg}/hari</strong> (dibatasi batas maksimal 24 jam bumi).
     `;
   }
 
@@ -450,8 +457,10 @@ function renderForecastChart(data) {
     futureDate.setDate(now.getDate() + i);
     next7Days.push(futureDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
     
+    // Variasi acak (±10%) dengan batas aman 24 jam
     const variation = (Math.random() * 0.2 - 0.1) * avgDailyMinutes;
-    projectedDurations.push(Math.max(10, Math.round(avgDailyMinutes + variation)));
+    const finalVal = Math.min(MAX_MINUTES_PER_DAY, Math.max(10, Math.round(avgDailyMinutes + variation)));
+    projectedDurations.push(finalVal);
   }
 
   // 3. Render Chart Proyeksi
@@ -467,7 +476,7 @@ function renderForecastChart(data) {
         data: projectedDurations,
         borderColor: '#8b5cf6',
         backgroundColor: 'rgba(139, 92, 246, 0.15)',
-        borderDash: [5, 5], // Garis putus-putus indikator perkiraan
+        borderDash: [5, 5],
         fill: true,
         tension: 0.4,
         pointRadius: 5,
@@ -500,6 +509,7 @@ function renderForecastChart(data) {
       scales: {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
         y: { 
+          max: 1440, // Batas sumbu Y maksimal 24 jam (1440 menit)
           ticks: { 
             color: subTextColor, 
             font: { size: 10 },
