@@ -6,6 +6,10 @@ let isLoginMode = true;
 let categoryChartInstance = null;
 let weeklyChartInstance = null;
 
+// VARIABEL PAGINASI BARU
+let currentPage = 1;
+let itemsPerPage = 10;
+
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCR-1GY2yjkkmCBm-vSCiWxbGlQ_Wgpu0c", // Ganti dengan API Key asli milikmu
