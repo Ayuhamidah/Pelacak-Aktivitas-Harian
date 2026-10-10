@@ -12,6 +12,15 @@ async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  // FITUR KEAMANAN: Batasan ukuran file maksimal 500 MB (dalam bytes)
+  const maxSizeBytes = 500 * 1024 * 1024; 
+  
+  if (file.size > maxSizeBytes) {
+    showToast("Upload ditolak: Ukuran file melebihi batas 500MB!", "error");
+    event.target.value = ''; // Reset input agar user bisa memilih file lain
+    return; // Hentikan eksekusi skrip di sini
+  }
+
   const fileType = file.name.split('.').pop().toLowerCase();
 
   try {
@@ -28,7 +37,7 @@ async function handleFileUpload(event) {
     console.error("Import Error:", err);
     showToast("Gagal membaca isi file.", "error");
   } finally {
-    event.target.value = ''; // Reset input
+    event.target.value = ''; // Reset input setelah selesai
   }
 }
 
