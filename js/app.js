@@ -402,6 +402,7 @@ function escapeHtml(str) {
 }
 
 // VARIABEL INSTANS GRAFIK PROYEKSI
+// VARIABEL INSTANS GRAFIK PROYEKSI
 function renderForecastChart(data) {
   const forecastCanvas = document.getElementById('forecastChart');
   if (!forecastCanvas) return;
@@ -411,9 +412,9 @@ function renderForecastChart(data) {
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
   const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-  // 1. Tentukan Kategori Target & Batas Maksimal Realistis (5 Jam / 300 Menit)
+  // 1. Kategori Target & Batas Maksimal Mutlak (5 Jam / 300 Menit)
   const TARGET_CATEGORY = 'Olahraga'; 
-  const MAX_CATEGORY_MINUTES = 300; // Maksimal 5 Jam per hari per kategori
+  const MAX_CATEGORY_MINUTES = 300; // Maksimal 5 Jam per hari
 
   const dailyTotals = {};
   const now = new Date();
@@ -432,11 +433,9 @@ function renderForecastChart(data) {
   const totalDays = Object.keys(dailyTotals).length || 1;
   const totalMins = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
   
-  // Hitung rata-rata & terapkan batas maksimal 300 menit (5 Jam)
-  let avgMins = Math.round(totalMins / totalDays) || 45;
-  if (avgMins > MAX_CATEGORY_MINUTES) {
-    avgMins = MAX_CATEGORY_MINUTES;
-  }
+  // PAKSA POTONG MAKSIMAL 300 MENIT (5 JAM)
+  const rawAvg = Math.round(totalMins / totalDays) || 45;
+  const avgMins = Math.min(MAX_CATEGORY_MINUTES, rawAvg);
 
   // Formatting teks ramah pengguna
   const avgHours = (avgMins / 60).toFixed(1);
@@ -451,7 +450,7 @@ function renderForecastChart(data) {
     `;
   }
 
-  // 2. Buat Data Proyeksi 7 Hari Ke Depan
+  // 2. Buat Data Proyeksi 7 Hari Ke Depan (Terkunci Maksimal 300 Menit)
   const next7Days = [];
   const projectedValues = [];
 
@@ -512,11 +511,12 @@ function renderForecastChart(data) {
       scales: {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
         y: { 
-          beginAtZero: true,
-          max: 300, // Sumbu Y dibatasi tepat pada 300 Menit (5 Jam)
+          min: 0,
+          max: 300, // PAKSA SUMBU Y BERADA DI RENTANG 0 - 300 MENIT (5 JAM)
           ticks: { 
             color: subTextColor, 
             font: { size: 10 },
+            stepSize: 60, // Kenaikan kelipatan 1 Jam
             callback: function(value) {
               return value >= 60 ? (value / 60).toFixed(0) + ' Jam' : value + ' Mins';
             }
