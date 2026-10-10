@@ -25,6 +25,16 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+      // =============================================================
+    // 1. DEKLARASI VARIABEL UTAMA (WAJIB DI PALING ATAS)
+    // =============================================================
+    let allActivities = [];
+    let currentUser = null;
+    let userActivitiesRef = null;
+    let isLoginMode = true;
+    let categoryChartInstance = null;
+    let weeklyChartInstance = null;
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
     body {
