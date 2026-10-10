@@ -411,59 +411,46 @@ function renderForecastChart(data) {
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
   const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-  // 1. Hitung Rata-rata Durasi Harian (14 Hari Terakhir)
+  // Hitung Rata-rata Khusus Kategori "Olahraga" atau "Belajar"
+  const TARGET_CATEGORY = 'Olahraga'; 
   const dailyTotals = {};
   const now = new Date();
   
   data.forEach(item => {
-    const itemDate = new Date(item.dateTime);
-    const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
-    if (diffDays >= 0 && diffDays < 14) {
-      const dateKey = itemDate.toISOString().split('T')[0];
-      dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + Number(item.duration);
+    if (item.category === TARGET_CATEGORY) {
+      const itemDate = new Date(item.dateTime);
+      const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 0 && diffDays < 14) {
+        const dateKey = itemDate.toISOString().split('T')[0];
+        dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + Number(item.duration);
+      }
     }
   });
 
-  const totalDaysRecorded = Object.keys(dailyTotals).length || 1;
-  const rawTotalMinutes = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
-  
-  let avgDailyMinutes = Math.round(rawTotalMinutes / totalDaysRecorded) || 30;
+  const totalDays = Object.keys(dailyTotals).length || 1;
+  const totalMins = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
+  const avgMins = Math.round(totalMins / totalDays) || 45; // Default 45 menit jika data kosong
 
-  // FITUR KEAMANAN WAKTU BUMI: Batasi maksimal 24 Jam (1440 Menit) per hari
-  const MAX_MINUTES_PER_DAY = 1440;
-  if (avgDailyMinutes > MAX_MINUTES_PER_DAY) {
-    avgDailyMinutes = MAX_MINUTES_PER_DAY;
-  }
-
-  // Formatting Waktu Ramah Pengguna
-  const avgHours = (avgDailyMinutes / 60).toFixed(1);
-  const readableAvg = avgDailyMinutes >= 60 ? `${avgHours} Jam` : `${avgDailyMinutes} Menit`;
-
-  // Update Teks Penjelasan Dinamis
   const explanationEl = document.getElementById('forecastExplanationText');
   if (explanationEl) {
     explanationEl.innerHTML = `
-      Garis putus-putus (<span class="text-indigo-500 font-semibold">---</span>) menunjukkan perkiraan alokasi waktu aktivitas kamu untuk seminggu ke depan. 
-      Berdasarkan pola 14 hari terakhir, kamu diperkirakan menggunakan alokasi waktu hingga <strong class="text-slate-800 dark:text-white">${readableAvg}/hari</strong> (dibatasi batas maksimal 24 jam bumi).
+      Estimasi target waktu <strong>${TARGET_CATEGORY}</strong> harianmu untuk 7 hari ke depan berdasarkan kebiasaan 14 hari terakhir (~<strong>${avgMins} Menit/hari</strong>).
     `;
   }
 
-  // 2. Buat Label 7 Hari Ke Depan
   const next7Days = [];
-  const projectedDurations = [];
+  const projectedValues = [];
 
   for (let i = 1; i <= 7; i++) {
     const futureDate = new Date();
     futureDate.setDate(now.getDate() + i);
     next7Days.push(futureDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
     
-    // Variasi acak (±10%) dengan batas aman 24 jam
-    const variation = (Math.random() * 0.2 - 0.1) * avgDailyMinutes;
-    const finalVal = Math.min(MAX_MINUTES_PER_DAY, Math.max(10, Math.round(avgDailyMinutes + variation)));
-    projectedDurations.push(finalVal);
+    // Variasi acak ±15% yang realistis
+    const variation = (Math.random() * 0.3 - 0.15) * avgMins;
+    projectedValues.push(Math.max(15, Math.round(avgMins + variation)));
   }
 
-  // 3. Render Chart Proyeksi
   const ctxForecast = forecastCanvas.getContext('2d');
   if (forecastChartInstance) forecastChartInstance.destroy();
 
@@ -472,15 +459,15 @@ function renderForecastChart(data) {
     data: {
       labels: next7Days,
       datasets: [{
-        label: 'Estimasi Durasi',
-        data: projectedDurations,
-        borderColor: '#8b5cf6',
-        backgroundColor: 'rgba(139, 92, 246, 0.15)',
+        label: `Proyeksi ${TARGET_CATEGORY} (Menit)`,
+        data: projectedValues,
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.12)',
         borderDash: [5, 5],
         fill: true,
         tension: 0.4,
-        pointRadius: 5,
-        pointBackgroundColor: '#8b5cf6'
+        pointRadius: 4,
+        pointBackgroundColor: '#3b82f6'
       }]
     },
     options: {
@@ -488,35 +475,13 @@ function renderForecastChart(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { 
-          display: true, 
-          text: `Estimasi Rata-Rata: ~${readableAvg}/Hari`, 
-          color: textColor, 
-          font: { size: 12 } 
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const val = context.raw;
-              const hrs = (val / 60).toFixed(1);
-              return val >= 60 
-                ? ` Estimasi: ${hrs} Jam (${val} Menit)` 
-                : ` Estimasi: ${val} Menit`;
-            }
-          }
-        }
+        title: { display: true, text: `Target Rata-Rata ${TARGET_CATEGORY}: ~${avgMins} Mins/Hari`, color: textColor, font: { size: 12 } }
       },
       scales: {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
         y: { 
-          max: 1440, // Batas sumbu Y maksimal 24 jam (1440 menit)
-          ticks: { 
-            color: subTextColor, 
-            font: { size: 10 },
-            callback: function(value) {
-              return value >= 60 ? (value / 60).toFixed(0) + ' Jam' : value + ' Mins';
-            }
-          }, 
+          beginAtZero: true,
+          ticks: { color: subTextColor, font: { size: 10 }, callback: v => v + ' Mins' }, 
           grid: { color: gridColor } 
         }
       }
