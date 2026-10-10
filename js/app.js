@@ -3,7 +3,9 @@
 // =============================================================
 
 // Default Datetime Local Input
+let forecastChartInstance = null;
 const now = new Date();
+
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 const inputDateEl = document.getElementById('inputDateTime');
 if (inputDateEl) inputDateEl.value = now.toISOString().slice(0, 16);
