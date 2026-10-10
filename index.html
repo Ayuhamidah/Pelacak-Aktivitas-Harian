@@ -292,6 +292,47 @@
       applyTheme(isDark ? 'light' : 'dark');
     }
 
+        // =============================================================
+    // 1. DEKLARASI VARIABEL UTAMA (WAJIB DI PALING ATAS)
+    // =============================================================
+    let allActivities = [];
+    let currentUser = null;
+    let userActivitiesRef = null;
+    let isLoginMode = true;
+    let categoryChartInstance = null;
+    let weeklyChartInstance = null;
+
+    // =============================================================
+    // 2. LOGIK THEME TOGGLE (DARK / LIGHT MODE)
+    // =============================================================
+    const htmlEl = document.documentElement;
+    const currentTheme = localStorage.getItem('appTheme') || 'dark';
+
+    function applyTheme(theme) {
+      const iconAuth = document.getElementById('themeIconAuth');
+      const iconApp = document.getElementById('themeIconApp');
+
+      if (theme === 'dark') {
+        htmlEl.classList.add('dark');
+        if (iconAuth) iconAuth.className = 'fa-solid fa-sun';
+        if (iconApp) iconApp.className = 'fa-solid fa-sun';
+      } else {
+        htmlEl.classList.remove('dark');
+        if (iconAuth) iconAuth.className = 'fa-solid fa-moon';
+        if (iconApp) iconApp.className = 'fa-solid fa-moon';
+      }
+      localStorage.setItem('appTheme', theme);
+
+      if (typeof renderCharts === 'function' && allActivities && allActivities.length > 0) {
+        renderCharts(allActivities);
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = htmlEl.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+    }
+
     // Apply initial theme
     applyTheme(currentTheme);
 
