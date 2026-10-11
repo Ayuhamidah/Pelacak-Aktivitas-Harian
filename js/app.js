@@ -3,7 +3,7 @@
 // =============================================================
 
 // Default Datetime Local Input
-window.USER_TIER = 'free'
+window.USER_TIER = localStorage.getItem('userTier') || 'free';
 let forecastChartInstance = null;
 const now = new Date();
 
@@ -761,3 +761,46 @@ function applyTierRestrictions() {
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(applyTierRestrictions, 1000);
 });
+
+// ==================== FUNGSI KEMAS KINI UI PROFIL & NAIK TARAF ====================
+
+function updateProfileTierUI() {
+  const badge = document.getElementById('profileTierBadge');
+  const promo = document.getElementById('upgradePromoCard');
+  
+  if (!badge) return;
+
+  if (window.USER_TIER === 'premium') {
+    // Paparan Premium
+    badge.className = 'px-3 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full text-[11px] font-bold uppercase tracking-wider shadow-sm inline-block';
+    badge.innerHTML = '<i class="fa-solid fa-crown mr-1"></i> Akaun Premium';
+    if (promo) promo.classList.add('hidden'); // Sembunyikan kad promosi
+  } else {
+    // Paparan Percuma
+    badge.className = 'px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-[11px] font-bold uppercase tracking-wider inline-block';
+    badge.innerHTML = 'Akaun Percuma (Free)';
+    if (promo) promo.classList.remove('hidden'); // Tunjukkan kad promosi
+  }
+}
+
+// Panggil fungsi ini untuk mengemas kini profil sejurus halaman dimuatkan
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(updateProfileTierUI, 1000);
+});
+
+// Fungsi simulasi klik butang "Naik Taraf Sekarang"
+function upgradeToPremium() {
+  const confirmUpgrade = confirm("SIMULASI: Adakah anda mahu menaik taraf ke Premium?\n\nIni akan membuang had 5 entri dan membuka semua ciri AI Forecast serta fungsi Eksport/Import.");
+  if (confirmUpgrade) {
+    localStorage.setItem('userTier', 'premium');
+    showToast("Tahniah! Akaun anda dinaik taraf ke PREMIUM. 👑 Memuat semula...", "success");
+    setTimeout(() => location.reload(), 1500); // Reload supaya semua sekatan paywall ditarik balik
+  }
+}
+
+// Fungsi bantu untuk patah balik ke akaun percuma (bagi tujuan ujian)
+function resetToFree() {
+  localStorage.setItem('userTier', 'free');
+  showToast("Akaun dikembalikan kepada Percuma. Memuat semula...", "error");
+  setTimeout(() => location.reload(), 1000);
+}
