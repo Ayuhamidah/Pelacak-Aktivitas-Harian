@@ -607,7 +607,6 @@ async function resetAllData() {
   }
 
   try {
-    // Hapus seluruh node aktivitas pengguna di Firebase Realtime Database
     await userActivitiesRef.remove();
     showToast("Seluruh data berhasil dihapus bersih!", "success");
   } catch (error) {
@@ -616,7 +615,7 @@ async function resetAllData() {
   }
 }
 
-// ==================== FUNGSI HAPUS DATA SETELAH TANGGAL TER TENTU ====================
+// ==================== FUNGSI HAPUS DATA SETELAH TANGGAL TERTENTU ====================
 
 async function deleteDataAfterDate() {
   if (!userActivitiesRef) {
@@ -629,7 +628,7 @@ async function deleteDataAfterDate() {
   if (!selectedDateStr) return;
 
   const targetDate = new Date(selectedDateStr);
-  targetDate.setHours(0, 0, 0, 0); // Set ke awal hari
+  targetDate.setHours(0, 0, 0, 0);
 
   if (isNaN(targetDate.getTime())) {
     showToast("Format tanggal tidak valid! Gunakan format YYYY-MM-DD", "error");
@@ -658,7 +657,7 @@ async function deleteDataAfterDate() {
       const itemDate = new Date(item.dateTime || item.createdAt);
       
       if (itemDate >= targetDate) {
-        updates[key] = null; // Menandai item untuk dihapus di Firebase
+        updates[key] = null;
         deletedCount++;
       }
     });
@@ -668,7 +667,7 @@ async function deleteDataAfterDate() {
       return;
     }
 
-    // 4. Eksekusi penghapusan masal secara efisien
+    // 4. Eksekusi penghapusan masal
     await userActivitiesRef.update(updates);
     showToast(`Berhasil menghapus ${deletedCount} entri data!`, "success");
   } catch (error) {
