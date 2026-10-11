@@ -586,3 +586,93 @@ function handleModalBackdropClick(e) {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeActivityModal();
 });
+
+// ==================== FUNGSI RESET / HAPUS MASSAL DATA ====================
+
+async function resetAllData() {
+  if (!userActivitiesRef) {
+    showToast("Gagal: Database tidak terhubung.", "error");
+    return;
+  }
+
+  // 1. Konfirmasi Keamanan Pertama
+  const confirmFirst = confirm("⚠️ PERINGATAN!\n\nApakah kamu yakin ingin menghapus SEMUA data aktivitas?\nSeluruh riwayat akan dihapus permanen dari cloud dan tidak dapat dikembalikan.");
+  if (!confirmFirst) return;
+
+  // 2. Konfirmasi Keamanan Kedua (Ketik 'HAPUS')
+  const confirmText = prompt("Ketik kata 'HAPUS' (huruf besar) untuk mengonfirmasi pembersihan data:");
+  if (confirmText !== "HAPUS") {
+    showToast("Reset dibatalkan (kata konfirmasi tidak sesuai).", "error");
+    return;
+  }
+
+  try {
+    // Hapus seluruh node aktivitas pengguna di Firebase Realtime Database
+    await userActivitiesRef.remove();
+    showToast("Seluruh data berhasil dihapus bersih!", "success");
+  } catch (error) {
+    console.error("Error resetting data:", error);
+    showToast("Gagal menghapus data dari database.", "error");
+  }
+}
+
+// ==================== FUNGSI HAPUS DATA SETELAH TANGGAL TER TENTU ====================
+
+async function deleteDataAfterDate() {
+  if (!userActivitiesRef) {
+    showToast("Gagal: Database tidak terhubung.", "error");
+    return;
+  }
+
+  // 1. Minta input tanggal batas dari pengguna
+  const selectedDateStr = prompt("Masukkan tanggal batas awal penghapusan (Format: YYYY-MM-DD):\n\nContoh: 2026-10-01 (Semua data dari 1 Oktober 2026 ke depan akan dihapus!)");
+  if (!selectedDateStr) return;
+
+  const targetDate = new Date(selectedDateStr);
+  targetDate.setHours(0, 0, 0, 0); // Set ke awal hari
+
+  if (isNaN(targetDate.getTime())) {
+    showToast("Format tanggal tidak valid! Gunakan format YYYY-MM-DD", "error");
+    return;
+  }
+
+  // 2. Konfirmasi tindakan
+  const confirmDelete = confirm(`⚠️ PERINGATAN!\n\nApakah kamu yakin ingin menghapus SEMUA data dari tanggal ${selectedDateStr} hingga sekarang?`);
+  if (!confirmDelete) return;
+
+  try {
+    const snapshot = await userActivitiesRef.once('value');
+    const data = snapshot.val();
+    
+    if (!data) {
+      showToast("Tidak ada data untuk dihapus.", "error");
+      return;
+    }
+
+    let deletedCount = 0;
+    const updates = {};
+
+    // 3. Filter data yang tanggalnya sama atau setelah tanggal batas
+    Object.keys(data).forEach(key => {
+      const item = data[key];
+      const itemDate = new Date(item.dateTime || item.createdAt);
+      
+      if (itemDate >= targetDate) {
+        updates[key] = null; // Menandai item untuk dihapus di Firebase
+        deletedCount++;
+      }
+    });
+
+    if (deletedCount === 0) {
+      showToast("Tidak ditemukan data pada atau setelah tanggal tersebut.", "error");
+      return;
+    }
+
+    // 4. Eksekusi penghapusan masal secara efisien
+    await userActivitiesRef.update(updates);
+    showToast(`Berhasil menghapus ${deletedCount} entri data!`, "success");
+  } catch (error) {
+    console.error("Error deleting date-filtered data:", error);
+    showToast("Gagal menghapus data dari database.", "error");
+  }
+}
