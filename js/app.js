@@ -58,6 +58,7 @@ if (activityFormEl) {
       await userActivitiesRef.push(newActivity);
       showToast("Aktivitas tersimpan!", "success");
       document.getElementById('activityForm').reset();
+      closeActivityModal();      
       
       const resetNow = new Date();
       resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
@@ -537,3 +538,51 @@ function renderForecastChart(data) {
     }
   });
 }
+// ==================== FUNGSI MODAL POP-UP TAMBAH DATA ====================
+
+function openActivityModal() {
+  const modal = document.getElementById('activityModal');
+  if (!modal) return;
+  
+  // Set default datetime-local ke waktu lokal saat ini
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const inputDateTime = document.getElementById('inputDateTime');
+  if (inputDateTime) {
+    inputDateTime.value = now.toISOString().slice(0, 16);
+  }
+
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    if (modal.children[0]) {
+      modal.children[0].classList.remove('scale-95');
+      modal.children[0].classList.add('scale-100');
+    }
+  }, 10);
+}
+
+function closeActivityModal() {
+  const modal = document.getElementById('activityModal');
+  if (!modal) return;
+  
+  modal.classList.add('opacity-0');
+  if (modal.children[0]) {
+    modal.children[0].classList.remove('scale-100');
+    modal.children[0].classList.add('scale-95');
+  }
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 300);
+}
+
+function handleModalBackdropClick(e) {
+  if (e.target.id === 'activityModal') {
+    closeActivityModal();
+  }
+}
+
+// Tutup modal jika tombol Esc ditekan
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeActivityModal();
+});
