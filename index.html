@@ -56,13 +56,11 @@
         </h1>
         <p class="text-slate-500 dark:text-slate-400 text-xs mt-1" id="authSubtitle">Masuk untuk mengelola data aktivitas pribadi kamu</p>
       </div>
-      <!-- Theme Toggle Auth -->
       <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
         <i id="themeIconAuth" class="fa-solid fa-moon"></i>
       </button>
     </div>
 
-    <!-- TAB SWITCHER -->
     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
       <button id="btnTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition shadow-sm">Masuk</button>
       <button id="btnTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Daftar</button>
@@ -101,7 +99,11 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <!-- APP VIEW SWITCHER -->
+        <!-- TOMBOL UTAMA POP-UP TAMBAH DATA -->
+        <button onclick="openActivityModal()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition transform hover:scale-105">
+          <i class="fa-solid fa-plus text-sm"></i> Tambah Aktivitas
+        </button>
+
         <div class="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
           <button id="navBtnDashboard" onclick="switchNavTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white transition flex items-center gap-2">
             <i class="fa-solid fa-chart-line"></i> Dashboard
@@ -111,7 +113,6 @@
           </button>
         </div>
 
-        <!-- Theme Toggle App -->
         <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Ubah Mode Tampilan">
           <i id="themeIconApp" class="fa-solid fa-moon"></i>
         </button>
@@ -131,6 +132,7 @@
 
     <!-- ==================== VIEW 1: DASHBOARD ==================== -->
     <div id="dashboardView" class="space-y-6">
+      
       <!-- METRICS CARDS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 border-l-4 border-l-blue-500 shadow-sm dark:shadow-none">
@@ -158,122 +160,58 @@
         </div>
       </div>
 
-      <!-- MAIN CONTENT GRID -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- FORM INPUT (KOLOM KIRI) -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-1 space-y-4 shadow-sm dark:shadow-none">
+      <!-- KARTU 1: PROYEKSI AKTIVITAS (FULL WIDTH & LEGA) -->
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-plus-circle text-blue-500 dark:text-blue-400"></i> Tambah Aktivitas
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Proyeksi Aktivitas 7 Hari Ke Depan
           </h2>
-
-          <form id="activityForm" class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
-              <input type="datetime-local" id="inputDateTime" required
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
-              <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
-                <select id="inputCategory" required
-                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
-                  <option value="Olahraga">🏃 Olahraga</option>
-                  <option value="Belajar">📚 Belajar</option>
-                  <option value="Pekerjaan">💼 Pekerjaan</option>
-                  <option value="Hiburan">🎮 Hiburan</option>
-                  <option value="Istirahat">😴 Istirahat</option>
-                  <option value="Lainnya">✨ Lainnya</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
-                <input type="number" id="inputDuration" min="1" placeholder="30" required
-                  class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
-              <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
-            </div>
-
-            <button type="submit" id="btnSubmit"
-              class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl text-sm transition flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
-              <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
-            </button>
-          </form>
-        </div>
-
-        <!-- CHARTS & FORECAST (KOLOM KANAN) -->
-        <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 lg:col-span-2 space-y-6 shadow-sm dark:shadow-none">
           
-          <!-- KARTU FORECAST -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-  <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-    <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Proyeksi Aktivitas 7 Hari Ke Depan
-  </h2>
-  
-  <div class="flex items-center gap-2">
-    <select id="forecastCategorySelect" onchange="updateForecastCategory()" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none">
-      <option value="Olahraga">🏃 Olahraga</option>
-      <option value="Belajar">📚 Belajar</option>
-      <option value="Pekerjaan">💼 Pekerjaan</option>
-      <option value="Hiburan">🎮 Hiburan</option>
-      <option value="Istirahat">😴 Istirahat</option>
-      <option value="Lainnya">✨ Lainnya</option>
-    </select>
-    <span class="text-xs bg-indigo-500/10 text-indigo-500 px-2.5 py-1 rounded-full font-medium">AI Forecast</span>
-  </div>
-</div>
-
-            <div class="p-3.5 bg-indigo-50/60 dark:bg-slate-900/50 rounded-xl border border-indigo-100 dark:border-slate-700/60 flex items-start gap-3 text-xs">
-              <i class="fa-solid fa-circle-info text-indigo-500 text-base mt-0.5"></i>
-              <div class="space-y-1 text-slate-600 dark:text-slate-300">
-                <p class="font-semibold text-slate-800 dark:text-white">Cara Membaca Grafik Ini:</p>
-                <p id="forecastExplanationText" class="leading-relaxed text-slate-500 dark:text-slate-400">
-                  Menghitung estimasi berdasarkan pola aktivitasmu...
-                </p>
-              </div>
-            </div>
-
-            <div class="h-64">
-              <canvas id="forecastChart"></canvas>
-            </div>
+          <div class="flex items-center gap-2">
+            <select id="forecastCategorySelect" onchange="updateForecastCategory()" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none">
+              <option value="Olahraga">🏃 Olahraga</option>
+              <option value="Belajar">📚 Belajar</option>
+              <option value="Pekerjaan">💼 Pekerjaan</option>
+              <option value="Hiburan">🎮 Hiburan</option>
+              <option value="Istirahat">😴 Istirahat</option>
+              <option value="Lainnya">✨ Lainnya</option>
+            </select>
+            <span class="text-xs bg-indigo-500/10 text-indigo-500 px-2.5 py-1 rounded-full font-medium">AI Forecast</span>
           </div>
-
-          <hr class="border-slate-200 dark:border-slate-700/60" />
-
-          <!-- GRAFIK UTAMA -->
-          <div class="space-y-4">
-            <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-              <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Grafik
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <div class="h-64 flex justify-center items-center">
-                <canvas id="categoryChart"></canvas>
-              </div>
-              <div class="h-64 flex justify-center items-center">
-                <canvas id="weeklyChart"></canvas>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-      </div> <!-- PENUTUP GRID -->
+        <div class="p-3.5 bg-indigo-50/60 dark:bg-slate-900/50 rounded-xl border border-indigo-100 dark:border-slate-700/60 flex items-start gap-3 text-xs">
+          <i class="fa-solid fa-circle-info text-indigo-500 text-base mt-0.5"></i>
+          <div class="space-y-1 text-slate-600 dark:text-slate-300">
+            <p class="font-semibold text-slate-800 dark:text-white">Cara Membaca Grafik Ini:</p>
+            <p id="forecastExplanationText" class="leading-relaxed text-slate-500 dark:text-slate-400">
+              Menghitung estimasi berdasarkan pola aktivitasmu...
+            </p>
+          </div>
+        </div>
 
-      <!-- TABLE & PAGINATION SECTION (LEBAR DI BAWAH) -->
+        <div class="h-72 w-full">
+          <canvas id="forecastChart"></canvas>
+        </div>
+      </div>
+
+      <!-- KARTU 2: ANALISIS & GRAFIK UTAMA (LEBAR DUA KOLOM DENGAN AREA LUAS) -->
+      <div class="glass-card bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm dark:shadow-none">
+        <h2 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-purple-500 dark:text-purple-400"></i> Analisis & Distribusi Aktivitas
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-2">
+          <div class="h-72 flex justify-center items-center">
+            <canvas id="categoryChart"></canvas>
+          </div>
+          <div class="h-72 flex justify-center items-center">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- KARTU 3: RIWAYAT AKTIVITAS PRIBADI (TABEL LEBAR DI BAWAH) -->
       <div class="bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 space-y-4 shadow-sm">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 class="text-lg font-semibold flex items-center gap-2 text-slate-800 dark:text-white">
@@ -350,7 +288,7 @@
           </div>
         </div>
       </div>
-    </div> <!-- PENUTUP dashboardView -->
+    </div>
 
     <!-- ==================== VIEW 2: PROFILE PAGE ==================== -->
     <div id="profileView" class="space-y-6 hidden">
@@ -395,7 +333,73 @@
       </div>
     </div>
 
-  </div> <!-- PENUTUP appContainer -->
+  </div>
+
+  <!-- ==================== 3. MODAL POP-UP DIALOG TAMBAH DATA ==================== -->
+  <div id="activityModal" onclick="handleModalBackdropClick(event)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-card bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl transform scale-95 transition-transform duration-300">
+      
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700/60">
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-blue-500"></i> Tambah Aktivitas Baru
+        </h3>
+        <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="activityForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tanggal & Waktu</label>
+          <input type="datetime-local" id="inputDateTime" required
+            class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Aktivitas</label>
+          <input type="text" id="inputTitle" placeholder="Contoh: Jogging Sore, Belajar JS" required
+            class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Kategori</label>
+            <select id="inputCategory" required
+              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition">
+              <option value="Olahraga">🏃 Olahraga</option>
+              <option value="Belajar">📚 Belajar</option>
+              <option value="Pekerjaan">💼 Pekerjaan</option>
+              <option value="Hiburan">🎮 Hiburan</option>
+              <option value="Istirahat">😴 Istirahat</option>
+              <option value="Lainnya">✨ Lainnya</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Durasi (Menit)</label>
+            <input type="number" id="inputDuration" min="1" placeholder="30" required
+              class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Catatan Opsional</label>
+          <textarea id="inputNotes" rows="2" placeholder="Catatan tambahan..."
+            class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeActivityModal()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition">
+            Batal
+          </button>
+          <button type="submit" id="btnSubmit"
+            class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium rounded-xl text-xs transition shadow-lg shadow-blue-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3 z-50">
@@ -403,7 +407,7 @@
     <span id="toastMessage" class="text-xs font-medium">Pesan notifikasi</span>
   </div>
 
-  <!-- ==================== PEMANGGILAN SCRIPT MODULAR ==================== -->
+  <!-- PEMANGGILAN SCRIPT MODULAR -->
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/export.js"></script>
