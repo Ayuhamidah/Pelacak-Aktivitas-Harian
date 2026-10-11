@@ -3,6 +3,7 @@
 // =============================================================
 
 // Default Datetime Local Input
+window.USER_TIER = 'free'
 let forecastChartInstance = null;
 const now = new Date();
 
@@ -33,52 +34,53 @@ function listenToUserActivities() {
 }
 
 // Add New Activity
+// Cari fungsi submit form dan ubah isinya menjadi seperti ini:
 const activityFormEl = document.getElementById('activityForm');
 if (activityFormEl) {
   activityFormEl.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!userActivitiesRef) return;
 
-    // --- AWAL SCRIPT BATASAN 5 ENTRI ---
-    window.USER_TIER = 'free'; // Simulasi akun gratis
-    
-    const snapshot = await userActivitiesRef.once('value');
-    const currentDataCount = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
-    
-    if (window.USER_TIER === 'free' && currentDataCount >= 5) {
-      showToast("Limit 5 aktivitas tercapai! Silakan upgrade ke Premium. 🔒", "error");
-      return; // Langsung hentikan proses simpan
-    }
-    // --- AKHIR SCRIPT BATASAN ---
-
-    const title = document.getElementById('inputTitle').value.trim();
-    const category = document.getElementById('inputCategory').value;
-    const duration = parseInt(document.getElementById('inputDuration').value);
-    const dateTime = document.getElementById('inputDateTime').value;
-    const notes = document.getElementById('inputNotes').value.trim();
-
-    const newActivity = {
-      title, category, duration, dateTime, notes,
-      createdAt: new Date().toISOString()
-    };
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
 
     try {
-      const btn = document.getElementById('btnSubmit');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+      // 1. CEK LIMIT UNTUK AKUN FREE SEBELUM MENYIMPAN
+      const snapshot = await userActivitiesRef.once('value');
+      const currentDataCount = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+      
+      if (window.USER_TIER === 'free' && currentDataCount >= 5) {
+        showToast("Limit 5 aktivitas tercapai! Silakan upgrade ke Premium.", "error");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas`;
+        return; // Hentikan proses simpan
+      }
+
+      // 2. LANJUTKAN PROSES SIMPAN JIKA AMAN
+      const title = document.getElementById('inputTitle').value.trim();
+      const category = document.getElementById('inputCategory').value;
+      const duration = parseInt(document.getElementById('inputDuration').value);
+      const dateTime = document.getElementById('inputDateTime').value;
+      const notes = document.getElementById('inputNotes').value.trim();
+
+      const newActivity = {
+        title, category, duration, dateTime, notes,
+        createdAt: new Date().toISOString()
+      };
 
       await userActivitiesRef.push(newActivity);
       showToast("Aktivitas tersimpan!", "success");
-      document.getElementById('activityForm').reset();
-      closeActivityModal();      
-      
+      activityFormEl.reset();
+      closeActivityModal();
+
       const resetNow = new Date();
       resetNow.setMinutes(resetNow.getMinutes() - resetNow.getTimezoneOffset());
       document.getElementById('inputDateTime').value = resetNow.toISOString().slice(0, 16);
+
     } catch (err) {
       showToast("Gagal menyimpan data", "error");
     } finally {
-      const btn = document.getElementById('btnSubmit');
       btn.disabled = false;
       btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Simpan Aktivitas`;
     }
@@ -687,3 +689,75 @@ async function deleteDataAfterDate() {
     showToast("Gagal menghapus data dari database.", "error");
   }
 }
+
+// ==================== FUNGSI PAYWALL & LIMITASI TIER ====================
+
+function applyTierRestrictions() {
+  if (window.USER_TIER !== 'free') return; // Lewati jika Premium
+
+  // 1. Batasi Kategori Hanya 3 (Matikan yang lain)
+  const allowedCategories = ['Olahraga', 'Pekerjaan', 'Istirahat'];
+  const categorySelects = document.querySelectorAll('#inputCategory, #forecastCategorySelect');
+  
+  categorySelects.forEach(select => {
+    Array.from(select.options).forEach(opt => {
+      if (opt.value !== 'ALL' && !allowedCategories.includes(opt.value)) {
+        opt.disabled = true;
+        opt.text += ' 🔒';
+      }
+    });
+  });
+
+  // 2. Kunci Tombol Export, Import, Reset, dan Hapus Filter
+  const premiumButtons = [
+    'button[onclick="triggerFileInput()"]',
+    'button[onclick="downloadCSVTemplate()"]',
+    'button[onclick="exportToCSV()"]',
+    'button[onclick="exportToPDF()"]',
+    'button[onclick="resetAllData()"]',
+    'button[onclick="deleteDataAfterDate()"]'
+  ];
+
+  premiumButtons.forEach(selector => {
+    const btn = document.querySelector(selector);
+    if (btn) {
+      btn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast("Fitur khusus Premium! 🔒", "error");
+      };
+    }
+  });
+
+  // 3. Efek Overlay Lock (Blur) pada AI Forecast & Grafik Mingguan
+  function addLockOverlay(elementId, title) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const parentContainer = el.parentElement;
+    parentContainer.classList.add('relative');
+    
+    // Cegah duplikasi overlay
+    if (!parentContainer.querySelector('.paywall-overlay')) {
+      const overlay = document.createElement('div');
+      overlay.className = 'paywall-overlay absolute inset-0 bg-slate-900/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center text-white z-20 cursor-not-allowed border border-amber-500/30';
+      overlay.innerHTML = `
+        <i class="fa-solid fa-lock text-3xl mb-2 text-amber-400 drop-shadow-md"></i>
+        <h3 class="font-bold text-sm text-slate-100">${title}</h3>
+        <span class="mt-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[10px] font-bold shadow-lg">UPGRADE PREMIUM</span>
+      `;
+      parentContainer.appendChild(overlay);
+    }
+  }
+
+  // Terapkan gembok ke elemen grafik tertentu
+  setTimeout(() => {
+    addLockOverlay('forecastChart', 'AI Forecast Terkunci');
+    addLockOverlay('weeklyChart', 'Analisis Lanjutan Terkunci');
+  }, 500); // Jeda sejenak untuk memastikan canvas sudah di-render HTML
+}
+
+// Panggil fungsi ini tepat setelah halaman/aplikasi dimuat
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(applyTierRestrictions, 1000);
+});
