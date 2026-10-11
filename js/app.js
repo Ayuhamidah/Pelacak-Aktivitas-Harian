@@ -401,19 +401,29 @@ function escapeHtml(str) {
   });
 }
 
-// VARIABEL INSTANS GRAFIK PROYEKSI
+// FUNGSI UNTUK MENGAPLIKASIKAN PERUBAHAN DROPDOWN FORECAST
+function updateForecastCategory() {
+  if (window.cachedActivities) {
+    renderForecastChart(window.cachedActivities);
+  }
+}
+
 // VARIABEL INSTANS GRAFIK PROYEKSI
 function renderForecastChart(data) {
   const forecastCanvas = document.getElementById('forecastChart');
   if (!forecastCanvas) return;
+
+  // Simpan data di memori global agar fungsi dropdown bisa memanggil ulang
+  window.cachedActivities = data;
 
   const isDark = htmlEl.classList.contains('dark');
   const textColor = isDark ? '#f8fafc' : '#1e293b';
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
   const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-  // 1. Kategori Target & Batas Maksimal Mutlak (5 Jam / 300 Menit)
-  const TARGET_CATEGORY = 'Olahraga'; 
+  // 1. Ambil Kategori dari Dropdown & Batas Maksimal Mutlak (5 Jam / 300 Menit)
+  const categorySelect = document.getElementById('forecastCategorySelect');
+  const TARGET_CATEGORY = categorySelect ? categorySelect.value : 'Olahraga'; 
   const MAX_CATEGORY_MINUTES = 300; // Maksimal 5 Jam per hari
 
   const dailyTotals = {};
@@ -433,7 +443,7 @@ function renderForecastChart(data) {
   const totalDays = Object.keys(dailyTotals).length || 1;
   const totalMins = Object.values(dailyTotals).reduce((a, b) => a + b, 0);
   
-  // PAKSA POTONG MAKSIMAL 300 MENIT (5 JAM)
+  // Potong maksimal 300 menit (5 Jam)
   const rawAvg = Math.round(totalMins / totalDays) || 45;
   const avgMins = Math.min(MAX_CATEGORY_MINUTES, rawAvg);
 
@@ -512,11 +522,11 @@ function renderForecastChart(data) {
         x: { ticks: { color: subTextColor, font: { size: 10 } }, grid: { display: false } },
         y: { 
           min: 0,
-          max: 300, // PAKSA SUMBU Y BERADA DI RENTANG 0 - 300 MENIT (5 JAM)
+          max: 300, // Sumbu Y dibatasi tepat pada 300 Menit (5 Jam)
           ticks: { 
             color: subTextColor, 
             font: { size: 10 },
-            stepSize: 60, // Kenaikan kelipatan 1 Jam
+            stepSize: 60, // Kelipatan 1 Jam
             callback: function(value) {
               return value >= 60 ? (value / 60).toFixed(0) + ' Jam' : value + ' Mins';
             }
