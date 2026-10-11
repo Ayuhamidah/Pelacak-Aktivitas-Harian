@@ -39,6 +39,18 @@ if (activityFormEl) {
     e.preventDefault();
     if (!userActivitiesRef) return;
 
+    // --- AWAL SCRIPT BATASAN 5 ENTRI ---
+    window.USER_TIER = 'free'; // Simulasi akun gratis
+    
+    const snapshot = await userActivitiesRef.once('value');
+    const currentDataCount = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+    
+    if (window.USER_TIER === 'free' && currentDataCount >= 5) {
+      showToast("Limit 5 aktivitas tercapai! Silakan upgrade ke Premium. 🔒", "error");
+      return; // Langsung hentikan proses simpan
+    }
+    // --- AKHIR SCRIPT BATASAN ---
+
     const title = document.getElementById('inputTitle').value.trim();
     const category = document.getElementById('inputCategory').value;
     const duration = parseInt(document.getElementById('inputDuration').value);
