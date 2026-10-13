@@ -899,6 +899,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 2. Buka Modal & Ambil Data Semua User
 async function openAdminPanel() {
+  // --- FIX KETUMPUK: Sembunyikan modal pembayaran jika terbuka ---
+  const payModal = document.getElementById('paymentModal');
+  if (payModal) payModal.classList.add('hidden', 'opacity-0');
+  // -------------------------------------------------------------
+
+  const modal = document.getElementById('adminModal');
+  
+  // Deteksi pintar jika HTML belum dipasang
+  if (!modal) {
+    alert("GAGAL MEMBUKA: Kode HTML untuk Modal Admin belum ditambahkan di file index.html!");
+    return;
+  }
+  
+  // ... (Sisa kode ke bawah tetap sama persis)
+  
   const modal = document.getElementById('adminModal');
   modal.classList.remove('hidden');
   setTimeout(() => modal.classList.remove('opacity-0'), 10);
