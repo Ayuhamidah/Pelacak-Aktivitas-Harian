@@ -886,3 +886,92 @@ function resetToFree() {
   showToast("Akaun dikembalikan kepada Percuma. Memuat semula...", "error");
   setTimeout(() => location.reload(), 1000);
 }
+
+// ==================== FUNGSI SUPER ADMIN ====================
+
+// 1. Munculkan tombol admin jika yang login adalah admin
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem('isAdmin') === 'true') {
+    const adminBtn = document.getElementById('btnOpenAdmin');
+    if (adminBtn) adminBtn.classList.remove('hidden');
+  }
+});
+
+// 2. Buka Modal & Ambil Data Semua User
+async function openAdminPanel() {
+  const modal = document.getElementById('adminModal');
+  modal.classList.remove('hidden');
+  setTimeout(() => modal.classList.remove('opacity-0'), 10);
+  
+  const tbody = document.getElementById('adminUserTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><br>Memuat database...</td></tr>';
+  
+  try {
+    // Ambil data node 'users' dari Firebase Realtime Database
+    const usersSnapshot = await firebase.database().ref('users').once('value');
+    const usersData = usersSnapshot.val();
+    
+    tbody.innerHTML = ''; 
+    
+    if (!usersData) {
+      tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center">Belum ada pengguna terdaftar.</td></tr>';
+      return;
+    }
+
+    Object.keys(usersData).forEach(uid => {
+      const u = usersData[uid];
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition';
+      
+      const isPremium = u.tier === 'premium';
+      const tierBadge = isPremium 
+        ? '<span class="px-2 py-1 bg-amber-100 text-amber-600 rounded-lg text-[10px] font-bold"><i class="fa-solid fa-crown"></i> PREMIUM</span>'
+        : '<span class="px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-bold">FREE</span>';
+      
+      tr.innerHTML = `
+        <td class="p-4 font-medium text-slate-800 dark:text-slate-200">${u.email || '-'}</td>
+        <td class="p-4">${tierBadge}</td>
+        <td class="p-4 text-xs">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '-'}</td>
+        <td class="p-4 text-center">
+          ${!isPremium ? `
+            <button onclick="forcePremium('${uid}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition shadow-sm">
+              Upgrade
+            </button>
+          ` : `
+            <button onclick="revokePremium('${uid}')" class="px-3 py-1.5 bg-slate-500 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition shadow-sm">
+              Downgrade
+            </button>
+          `}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-rose-500 font-bold">Akses Ditolak. Pastikan Rules Firebase Database diizinkan untuk Admin.</td></tr>`;
+  }
+}
+
+// 3. Tutup Panel Admin
+function closeAdminPanel() {
+  const modal = document.getElementById('adminModal');
+  modal.classList.add('opacity-0');
+  setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+// 4. Aksi Ubah Tier User (Kirim Perintah ke Firebase)
+async function forcePremium(uid) {
+  if(confirm('Berikan akses PREMIUM secara gratis untuk user ini?')) {
+    await firebase.database().ref('users/' + uid).update({ tier: 'premium' });
+    showToast('Akses berhasil diupgrade!', 'success');
+    openAdminPanel(); // Segarkan tabel
+  }
+}
+
+async function revokePremium(uid) {
+  if(confirm('Cabut akses PREMIUM dari user ini?')) {
+    await firebase.database().ref('users/' + uid).update({ tier: 'free' });
+    showToast('Akses premium dicabut!', 'success');
+    openAdminPanel(); // Segarkan tabel
+  }
+}
