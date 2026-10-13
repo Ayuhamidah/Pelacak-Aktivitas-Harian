@@ -13,23 +13,24 @@ if (inputDateEl) inputDateEl.value = now.toISOString().slice(0, 16);
 
 // Realtime Firebase Listener
 function listenToUserActivities() {
-  if (!userActivitiesRef) return;
+if (!userActivitiesRef) {
+    console.warn("Reference ke database belum siap.");
+    return;
+  }
 
+  // Aktifkan listener untuk membaca data secara real-time
   userActivitiesRef.on('value', (snapshot) => {
     const data = snapshot.val();
-    allActivities = [];
     
-    if (data) {
-      Object.keys(data).forEach((key) => {
-        allActivities.push({ id: key, ...data[key] });
-      });
-      allActivities.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-    }
-
-    renderUI();
+    // Perbarui UI Dashboard dan Grafik dengan data terbaru
+    if (typeof updateDashboard === "function") updateDashboard(data);
+    if (typeof renderCharts === "function") renderCharts(data);
+    
+    // Cek batas tier (Free/Premium) setiap kali ada data baru
+    if (typeof applyTierRestrictions === "function") applyTierRestrictions();
   }, (error) => {
-    console.error("Firebase Read Error:", error);
-    showToast("Gagal membaca data.", "error");
+    console.error("Gagal membaca data dari Firebase:", error);
+    showToast("Gagal menyinkronkan data", "error");
   });
 }
 
