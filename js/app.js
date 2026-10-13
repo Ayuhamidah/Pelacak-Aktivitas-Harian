@@ -789,13 +789,57 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Fungsi simulasi klik butang "Naik Taraf Sekarang"
+// ==================== FUNGSI SIMULASI PAYMENT GATEWAY ====================
+
+// Buka Modal Pembayaran (Menggantikan confirm prompt lama)
 function upgradeToPremium() {
-  const confirmUpgrade = confirm("SIMULASI: Adakah anda mahu menaik taraf ke Premium?\n\nIni akan membuang had 5 entri dan membuka semua ciri AI Forecast serta fungsi Eksport/Import.");
-  if (confirmUpgrade) {
-    localStorage.setItem('userTier', 'premium');
-    showToast("Tahniah! Akaun anda dinaik taraf ke PREMIUM. 👑 Memuat semula...", "success");
-    setTimeout(() => location.reload(), 1500); // Reload supaya semua sekatan paywall ditarik balik
+  const modal = document.getElementById('paymentModal');
+  if (!modal) return;
+  
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    if(modal.children[0]) {
+      modal.children[0].classList.remove('scale-95');
+      modal.children[0].classList.add('scale-100');
+    }
+  }, 10);
+}
+
+// Tutup Modal Pembayaran
+function closePaymentModal() {
+  const modal = document.getElementById('paymentModal');
+  if (!modal) return;
+  
+  modal.classList.add('opacity-0');
+  if(modal.children[0]) {
+    modal.children[0].classList.remove('scale-100');
+    modal.children[0].classList.add('scale-95');
   }
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 300);
+}
+
+// Proses Pembayaran Simulasi (Loading state -> Success)
+function processPayment() {
+  const btn = document.getElementById('btnConfirmPayment');
+  
+  // Ubah tombol jadi loading
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi Pembayaran...`;
+  btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+  // Jeda 2.5 detik untuk simulasi komunikasi dengan bank/server
+  setTimeout(() => {
+    localStorage.setItem('userTier', 'premium');
+    closePaymentModal();
+    showToast("Pembayaran Berhasil! Akun Anda kini PREMIUM. 👑", "success");
+    
+    // Refresh halaman agar lencana dan batas paywall terbuka
+    setTimeout(() => location.reload(), 1500);
+  }, 2500);
 }
 
 // Fungsi bantu untuk patah balik ke akaun percuma (bagi tujuan ujian)
