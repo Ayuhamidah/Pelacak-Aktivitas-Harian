@@ -822,22 +822,36 @@ function closePaymentModal() {
   }, 300);
 }
 
-// Proses Pembayaran Simulasi (Loading state -> Success)
+// Beralih dari halaman pilihan pembayaran ke halaman QR Code
+function generateQRIS() {
+  const btn = document.getElementById('btnProceedQRIS');
+  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menghasilkan QRIS...`;
+  
+  setTimeout(() => {
+    // Sembunyikan bagian pilihan metode
+    document.getElementById('paymentSelection').classList.add('hidden');
+    // Munculkan bagian gambar QR Code API
+    document.getElementById('qrisContainer').classList.remove('hidden');
+    document.getElementById('qrisContainer').classList.add('flex');
+  }, 800);
+}
+
+// Proses verifikasi simulasi setelah user pura-pura scan
 function processPayment() {
   const btn = document.getElementById('btnConfirmPayment');
   
   // Ubah tombol jadi loading
   btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi Pembayaran...`;
+  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi Transaksi...`;
   btn.classList.add('opacity-80', 'cursor-not-allowed');
 
-  // Jeda 2.5 detik untuk simulasi komunikasi dengan bank/server
+  // Jeda 2.5 detik untuk simulasi komunikasi webhook dengan server bank
   setTimeout(() => {
     localStorage.setItem('userTier', 'premium');
     closePaymentModal();
     showToast("Pembayaran Berhasil! Akun Anda kini PREMIUM. 👑", "success");
     
-    // Refresh halaman agar lencana dan batas paywall terbuka
+    // Refresh halaman agar semua fitur terbuka
     setTimeout(() => location.reload(), 1500);
   }, 2500);
 }
