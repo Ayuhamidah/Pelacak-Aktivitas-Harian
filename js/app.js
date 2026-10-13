@@ -803,8 +803,8 @@ function upgradeToPremium() {
   
   modal.classList.remove('hidden');
   
-  const modal = document.getElementById('paymentModal');
-  if (!modal) return;
+  //const modal = document.getElementById('paymentModal');
+  //if (!modal) return;
   
   modal.classList.remove('hidden');
   setTimeout(() => {
@@ -909,22 +909,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 2. Buka Modal & Ambil Data Semua User
 async function openAdminPanel() {
-  // --- FIX KETUMPUK: Sembunyikan modal pembayaran jika terbuka ---
+  // 1. Sembunyikan modal pembayaran
   const payModal = document.getElementById('paymentModal');
   if (payModal) payModal.classList.add('hidden', 'opacity-0');
-  // -------------------------------------------------------------
 
+  // 2. Deklarasikan modal admin (CUKUP SATU KALI SAJA)
   const modal = document.getElementById('adminModal');
   
-  // Deteksi pintar jika HTML belum dipasang
   if (!modal) {
-    alert("GAGAL MEMBUKA: Kode HTML untuk Modal Admin belum ditambahkan di file index.html!");
+    alert("GAGAL MEMBUKA: Kode HTML belum ditambahkan!");
     return;
   }
   
-  // ... (Sisa kode ke bawah tetap sama persis)
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  setTimeout(() => modal.classList.remove('opacity-0'), 10);
   
-  const modal = document.getElementById('adminModal');
+  // ... Lanjut ke kode tabel ...
   modal.classList.remove('hidden');
   setTimeout(() => modal.classList.remove('opacity-0'), 10);
   
