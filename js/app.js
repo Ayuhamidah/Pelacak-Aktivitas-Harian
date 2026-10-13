@@ -822,18 +822,42 @@ function closePaymentModal() {
   }, 300);
 }
 
-// Beralih dari halaman pilihan pembayaran ke halaman QR Code
-function generateQRIS() {
-  const btn = document.getElementById('btnProceedQRIS');
-  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menghasilkan QRIS...`;
+// Membuka Tab Lynk.id dan Mengubah UI Modal
+function openLynkPayment() {
+  const btn = document.getElementById('btnProceedLynk');
+  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Membuka Lynk.id...`;
+  
+  // GANTI URL INI DENGAN LINK PRODUK LYNK.ID MILIKMU!
+  // Contoh: "https://lynk.id/namakamu/s/XyZ123"
+  const lynkUrl = "https://lynk.id/"; 
   
   setTimeout(() => {
-    // Sembunyikan bagian pilihan metode
+    // 1. Buka tab baru ke halaman pembayaran Lynk.id
+    window.open(lynkUrl, '_blank');
+    
+    // 2. Ganti tampilan UI ke status menunggu konfirmasi
     document.getElementById('paymentSelection').classList.add('hidden');
-    // Munculkan bagian gambar QR Code API
-    document.getElementById('qrisContainer').classList.remove('hidden');
-    document.getElementById('qrisContainer').classList.add('flex');
+    document.getElementById('paymentConfirmation').classList.remove('hidden');
+    document.getElementById('paymentConfirmation').classList.add('flex');
   }, 800);
+}
+
+// Proses verifikasi setelah pengguna mengklik "Saya Sudah Bayar"
+function processPayment() {
+  const btn = document.getElementById('btnConfirmPayment');
+  
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi Transaksi...`;
+  btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+  // Jeda 2.5 detik untuk simulasi pengecekan
+  setTimeout(() => {
+    localStorage.setItem('userTier', 'premium');
+    closePaymentModal();
+    showToast("Pembayaran Berhasil Diverifikasi! Akun Anda kini PREMIUM. 👑", "success");
+    
+    setTimeout(() => location.reload(), 1500);
+  }, 2500);
 }
 
 // Proses verifikasi simulasi setelah user pura-pura scan
