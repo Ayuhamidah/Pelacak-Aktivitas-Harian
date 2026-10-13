@@ -793,6 +793,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Buka Modal Pembayaran (Menggantikan confirm prompt lama)
 function upgradeToPremium() {
+  // --- FIX KETUMPUK: Sembunyikan modal admin jika terbuka ---
+  const adModal = document.getElementById('adminModal');
+  if (adModal) adModal.classList.add('hidden', 'opacity-0');
+  // ----------------------------------------------------------
+
+  const modal = document.getElementById('paymentModal');
+  if (!modal) return;
+  
+  modal.classList.remove('hidden');
+  
   const modal = document.getElementById('paymentModal');
   if (!modal) return;
   
