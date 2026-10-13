@@ -445,50 +445,37 @@
         <p class="text-white/90 text-xs mt-1">Buka semua fitur tanpa batas selamanya</p>
       </div>
 
-<!-- Body Modal -->
+<!-- Body Modal (Lynk.id Integration) -->
       <div class="p-6 space-y-5">
         
-        <!-- BAGIAN 1: PILIHAN PEMBAYARAN -->
-        <div id="paymentSelection" class="space-y-5">
-          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-            <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Total Pembayaran</span>
-            <span class="text-xl font-black text-orange-500">Rp 49.000</span>
+        <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Total Pembayaran</span>
+          <span class="text-xl font-black text-blue-600 dark:text-blue-400">Rp 49.000</span>
+        </div>
+        
+        <!-- BAGIAN 1: TOMBOL MENUJU LYNK.ID -->
+        <div id="paymentSelection" class="space-y-4">
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-sm text-slate-600 dark:text-slate-300 text-center leading-relaxed">
+            Pembayaran diproses secara aman melalui <strong class="text-blue-600 dark:text-blue-400">Lynk.id</strong>. Anda bisa menggunakan QRIS, GoPay, OVO, ShopeePay, atau Transfer Bank.
           </div>
           
-          <div class="space-y-3">
-            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pilih Metode</label>
-            <div class="grid grid-cols-2 gap-3">
-              <button type="button" class="border-2 border-orange-500 bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-sm font-bold text-slate-700 dark:text-slate-200 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-qrcode text-orange-500"></i> QRIS
-              </button>
-              <button type="button" class="border border-slate-200 dark:border-slate-700 hover:border-orange-500 rounded-xl p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 transition opacity-50 cursor-not-allowed">
-                Transfer Bank
-              </button>
-            </div>
-          </div>
-
-          <button id="btnProceedQRIS" onclick="generateQRIS()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-xl font-bold shadow-lg shadow-orange-500/30 transition flex justify-center items-center gap-2 text-sm mt-2">
-            Tampilkan QRIS <i class="fa-solid fa-qrcode"></i>
+          <button id="btnProceedLynk" onclick="openLynkPayment()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition flex justify-center items-center gap-2 text-sm">
+            Lanjut Bayar via Lynk.id <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </button>
         </div>
 
-        <!-- BAGIAN 2: TAMPILAN QR CODE (Awalnya Disembunyikan) -->
-        <div id="qrisContainer" class="hidden flex-col items-center justify-center space-y-4 text-center">
-          <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">Scan QRIS ini menggunakan M-Banking atau GoPay/OVO/Dana</p>
-          
-          <!-- Pihak Ketiga API QR Generator -->
-          <div class="p-4 bg-white rounded-2xl shadow-inner border border-slate-200 inline-block">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PEMBAYARAN_PREMIUM_PELACAK_AKTIVITAS_49000_RUPIAH" alt="QRIS Code" class="w-48 h-48" />
+        <!-- BAGIAN 2: KONFIRMASI (Muncul setelah tab Lynk.id terbuka) -->
+        <div id="paymentConfirmation" class="hidden flex-col items-center justify-center space-y-4 text-center">
+          <div class="w-16 h-16 bg-blue-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-blue-500 mb-1 border border-blue-100 dark:border-slate-700">
+            <i class="fa-solid fa-clock-rotate-left text-2xl animate-spin-slow"></i>
           </div>
+          <h4 class="font-bold text-slate-800 dark:text-white">Menunggu Pembayaran</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 px-4">
+            Selesaikan transaksi di halaman Lynk.id yang baru saja terbuka. Jika sudah selesai, klik tombol di bawah ini.
+          </p>
           
-          <p class="text-2xl font-black text-orange-500">Rp 49.000</p>
-          <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 animate-pulse">
-            <i class="fa-solid fa-circle-notch fa-spin"></i> Menunggu pembayaran masuk...
-          </div>
-          
-          <!-- Tombol Simulasi Jika Sudah Scan -->
-          <button id="btnConfirmPayment" onclick="processPayment()" class="w-full py-3 mt-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition flex justify-center items-center gap-2 text-sm">
-            <i class="fa-solid fa-check"></i> Simulasi: Saya Sudah Bayar
+          <button id="btnConfirmPayment" onclick="processPayment()" class="w-full py-3.5 mt-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition flex justify-center items-center gap-2 text-sm">
+            <i class="fa-solid fa-check-circle"></i> Saya Sudah Bayar
           </button>
         </div>
 
