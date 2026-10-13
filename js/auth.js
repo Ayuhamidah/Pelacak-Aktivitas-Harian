@@ -80,7 +80,15 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
     btnSubmit.disabled = true;
     btnSubmit.innerText = "Memproses...";
     if (isLoginMode) {
-      await auth.signInWithEmailAndPassword(email, password);
+  await auth.signInWithEmailAndPassword(email, password);
+        
+        // --- CEK APAKAH YANG LOGIN ADALAH SUPER ADMIN ---
+        if (email === "office.ayuhamidah@gmail.com") { // Ganti dengan email khusus milikmu
+          localStorage.setItem('isAdmin', 'true');
+        } else {
+          localStorage.removeItem('isAdmin');
+        }
+        //
     } else {
           await auth.createUserWithEmailAndPassword(email, password);
           localStorage.setItem('userTier', 'free'); // <-- Tambahkan di sini
