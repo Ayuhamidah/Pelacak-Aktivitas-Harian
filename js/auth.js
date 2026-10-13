@@ -82,8 +82,9 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
     if (isLoginMode) {
       await auth.signInWithEmailAndPassword(email, password);
     } else {
-      await auth.createUserWithEmailAndPassword(email, password);
-    }
+          await auth.createUserWithEmailAndPassword(email, password);
+          localStorage.setItem('userTier', 'free'); // <-- Tambahkan di sini
+      }
   } catch (err) {
     showToast(err.message || "Gagal otentikasi", "error");
   } finally {
@@ -93,7 +94,19 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
 });
 
 function logout() {
-  auth.signOut().then(() => showToast("Berhasil keluar.", "success"));
+  // Hapus memori premium di browser
+  localStorage.removeItem('userTier');
+  
+  firebase.auth().signOut().then(() => {
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('authContainer').classList.remove('hidden');
+    showToast("Berhasil keluar", "success");
+    
+    // Refresh halaman agar benar-benar bersih
+    setTimeout(() => location.reload(), 1000);
+  }).catch((error) => {
+    showToast(error.message, "error");
+  });
 }
 
 function switchNavTab(tab) {
