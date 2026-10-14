@@ -238,7 +238,7 @@ function renderTable(data) {
     return;
   }
 
-  data.forEach(item => {
+  activitiesArray.forEach(item => {
     const dateObj = new Date(item.dateTime);
     const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     const formattedTime = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -271,7 +271,7 @@ function renderMetrics(data) {
   let todayDuration = 0, todayCount = 0, totalDuration = 0;
   const catCount = {};
 
-  data.forEach(item => {
+  activitiesArray.forEach(item => {
     totalDuration += Number(item.duration);
     catCount[item.category] = (catCount[item.category] || 0) + 1;
     if (item.dateTime && item.dateTime.startsWith(todayStr)) {
@@ -374,7 +374,7 @@ function renderCharts(data) {
     last7Days.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
   }
 
-  data.forEach(item => {
+  activitiesArray.forEach(item => {
     const itemDate = new Date(item.dateTime);
     const now = new Date();
     const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
@@ -457,7 +457,7 @@ function renderForecastChart(data) {
   const dailyTotals = {};
   const now = new Date();
   
-  data.forEach(item => {
+  activitiesArray.forEach(item => {
     if (item.category === TARGET_CATEGORY) {
       const itemDate = new Date(item.dateTime);
       const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
