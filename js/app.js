@@ -406,7 +406,7 @@ function renderCharts(data) {
       }
     });
   }
-
+}
 
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
