@@ -340,7 +340,7 @@ function renderCharts(data) {
             catTotals['Lainnya'] += Number(activity.duration);
         }
     });
-
+}
 
   const catCanvas = document.getElementById('categoryChart');
   if (catCanvas) {
@@ -406,7 +406,7 @@ function renderCharts(data) {
       }
     });
   }
-}
+
 
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
