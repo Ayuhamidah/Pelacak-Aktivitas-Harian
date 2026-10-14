@@ -383,7 +383,7 @@ function renderCharts(data) {
     last7Days.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
   }
 // 1. Konversi ke Array terlebih dahulu
-  const activitiesArray = Object.values(data);
+ // const activitiesArray = Object.values(data);
 
   // 2. Gunakan Array tersebut untuk looping
   activitiesArray.forEach(item => {
