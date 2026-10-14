@@ -237,7 +237,10 @@ function renderTable(data) {
     tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400">Belum ada data aktivitas.</td></tr>`;
     return;
   }
+// 1. Konversi ke Array terlebih dahulu
+  const activitiesArray = Object.values(data);
 
+  // 2. Gunakan Array tersebut untuk looping
   activitiesArray.forEach(item => {
     const dateObj = new Date(item.dateTime);
     const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
@@ -270,7 +273,10 @@ function renderMetrics(data) {
   const todayStr = new Date().toISOString().split('T')[0];
   let todayDuration = 0, todayCount = 0, totalDuration = 0;
   const catCount = {};
+// 1. Konversi ke Array terlebih dahulu
+  const activitiesArray = Object.values(data);
 
+  // 2. Gunakan Array tersebut untuk looping
   activitiesArray.forEach(item => {
     totalDuration += Number(item.duration);
     catCount[item.category] = (catCount[item.category] || 0) + 1;
@@ -331,7 +337,10 @@ function renderCharts(data) {
     const gridColor = isDark ? '#334155' : '#e2e8f0';
 
     const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
-    
+    // 1. Konversi ke Array terlebih dahulu
+  const activitiesArray = Object.values(data);
+
+  // 2. Gunakan Array tersebut untuk looping
     activitiesArray.forEach(activity => {
         // Ganti 'item' menjadi 'activity'
         if (catTotals[activity.category] !== undefined) {
@@ -373,7 +382,10 @@ function renderCharts(data) {
     d.setDate(d.getDate() - i);
     last7Days.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
   }
+// 1. Konversi ke Array terlebih dahulu
+  const activitiesArray = Object.values(data);
 
+  // 2. Gunakan Array tersebut untuk looping
   activitiesArray.forEach(item => {
     const itemDate = new Date(item.dateTime);
     const now = new Date();
@@ -456,7 +468,10 @@ function renderForecastChart(data) {
 
   const dailyTotals = {};
   const now = new Date();
-  
+  // 1. Konversi ke Array terlebih dahulu
+  const activitiesArray = Object.values(data);
+
+  // 2. Gunakan Array tersebut untuk looping
   activitiesArray.forEach(item => {
     if (item.category === TARGET_CATEGORY) {
       const itemDate = new Date(item.dateTime);
