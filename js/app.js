@@ -338,7 +338,7 @@ function renderCharts(data) {
 
     const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
     // 1. Konversi ke Array terlebih dahulu
-  const activitiesArray = Object.values(data);
+//  const activitiesArray = Object.values(data);
 
   // 2. Gunakan Array tersebut untuk looping
     activitiesArray.forEach(activity => {
