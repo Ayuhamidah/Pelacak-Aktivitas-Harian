@@ -319,6 +319,11 @@ function renderCharts(data) {
     // 1. Ubah Object menjadi Array
   const activitiesArray = Object.values(data);
     
+  // 2. Gunakan nama parameter yang konsisten (misal: 'activity')
+  activitiesArray.forEach(activity => {
+    // Gunakan variabel 'activity' di sini (JANGAN pakai 'item' jika parameternya 'activity')
+    console.ap(activity.title); 
+    // ... sisa kode grafikmu ...
   const isDark = htmlEl.classList.contains('dark');
   const textColor = isDark ? '#f8fafc' : '#1e293b';
   const subTextColor = isDark ? '#94a3b8' : '#64748b';
