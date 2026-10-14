@@ -317,26 +317,30 @@ function renderMetrics(data) {
 
 function renderCharts(data) {
     // 1. Ubah Object menjadi Array
-  const activitiesArray = Object.values(data);
-    
-  // 2. Gunakan nama parameter yang konsisten (misal: 'activity')
-  activitiesArray.forEach(activity => {
-    // Gunakan variabel 'activity' di sini (JANGAN pakai 'item' jika parameternya 'activity')
-    console.ap(activity.title); 
-    // ... sisa kode grafikmu ...
-  const isDark = htmlEl.classList.contains('dark');
-  const textColor = isDark ? '#f8fafc' : '#1e293b';
-  const subTextColor = isDark ? '#94a3b8' : '#64748b';
-  const gridColor = isDark ? '#334155' : '#e2e8f0';
+    const activitiesArray = Object.values(data);
 
-  const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
-  activitiesArray.forEach(activity => {
-    if (catTotals[item.category] !== undefined) {
-      catTotals[item.category] += Number(item.duration);
-    } else {
-      catTotals['Lainnya'] += Number(item.duration);
-    }
-  });
+    // 2. Gunakan nama parameter yang konsisten (misal: 'activity')
+    activitiesArray.forEach(activity => {
+        // Gunakan console.log yang benar
+        console.log(activity.title); 
+    });
+
+    const isDark = htmlEl.classList.contains('dark');
+    const textColor = isDark ? '#f8fafc' : '#1e293b';
+    const subTextColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+    const catTotals = { 'Olahraga': 0, 'Belajar': 0, 'Pekerjaan': 0, 'Hiburan': 0, 'Istirahat': 0, 'Lainnya': 0 };
+    
+    activitiesArray.forEach(activity => {
+        // Ganti 'item' menjadi 'activity'
+        if (catTotals[activity.category] !== undefined) {
+            catTotals[activity.category] += Number(activity.duration);
+        } else {
+            catTotals['Lainnya'] += Number(activity.duration);
+        }
+    });
+}
 
   const catCanvas = document.getElementById('categoryChart');
   if (catCanvas) {
